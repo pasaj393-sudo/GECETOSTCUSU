@@ -2,12 +2,13 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Döner Efsanesi: Türk Dünyası & Sıcak Yuva</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Efsane Dönerci: Hakiki Usta Simülasyonu</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,1350 +22,724 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
-            padding: 5px;
+            padding: 2px;
         }
 
         #game-container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 950px;
             height: 98vh;
             max-height: 600px;
             background: #2b1810;
-            border: 4px solid #5c3a21;
+            border: 5px solid #5c3a21;
             border-radius: 12px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
         }
 
-        /* Top Bar UI */
-        .header-bar {
-            width: 100%;
-            height: 42px;
-            background: linear-gradient(to bottom, #422517, #2c170d);
-            border-bottom: 2px solid #6e4223;
+        /* Top Bar */
+        .top-bar {
+            height: 40px;
+            background: #422517;
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 10px;
-            z-index: 200;
-            flex-shrink: 0;
-        }
-
-        .stat-box {
-            background: #1c0e08;
-            border: 1px solid #8c532b;
-            border-radius: 6px;
-            padding: 2px 8px;
+            font-weight: bold;
             font-size: 13px;
-            font-weight: bold;
-            color: #f1c40f;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            border-bottom: 2px solid #6e4223;
+            z-index: 10;
         }
 
-        .btn-ui {
-            background: #8c2b2b;
-            color: white;
-            border: 1px solid #e74c3c;
+        .stat-badge {
+            background: #1c0e08;
+            padding: 3px 10px;
             border-radius: 6px;
-            padding: 4px 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-            transition: all 0.2s;
+            border: 1px solid #8c532b;
+            color: #f1c40f;
         }
 
-        .btn-ui:hover {
-            background: #a83232;
-            transform: scale(1.03);
-        }
-
-        .btn-break {
-            background: #27ae60;
-            border-color: #2ecc71;
-        }
-
-        .btn-recipe {
-            background: #2980b9;
-            border-color: #3498db;
-        }
-
-        .btn-market {
-            background: #d35400;
-            border-color: #e67e22;
-        }
-
-        /* Scenes */
-        .scene {
-            width: 100%;
-            flex: 1;
-            position: relative;
-            display: none;
-        }
-
-        .scene.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* DÖNER DÜKKANI SAHNESİ */
-        #shop-scene {
+        /* Dükkan Görünümü */
+        .shop-view {
+            height: 46%;
             background: #3a2312;
-            background-image: radial-gradient(#4a2f19 15%, transparent 16%), radial-gradient(#4a2f19 15%, transparent 16%);
-            background-size: 24px 24px;
-            background-position: 0 0, 12px 12px;
-            justify-content: space-between;
-        }
-
-        /* Müşteri Alanı */
-        .customer-area {
-            width: 100%;
-            height: 38%;
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            padding-bottom: 5px;
-            position: relative;
-        }
-
-        .customer-slot {
-            width: 30%;
-            max-width: 220px;
-            height: 100%;
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
-            cursor: pointer;
+            border-bottom: 4px solid #5c3a21;
+        }
+
+        /* Döner Ocağı */
+        .doner-machine-area {
+            position: absolute;
+            right: 15px;
+            bottom: 10px;
+            width: 105px;
+            height: 190px;
+            background: #111;
+            border: 3px solid #555;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .doner-spit {
+            width: 5px;
+            height: 100%;
+            background: #aaa;
+            position: absolute;
+        }
+
+        .doner-meat-large {
+            width: 65px;
+            height: 120px;
+            background: linear-gradient(to right, #803010, #b04818, #602008);
+            border-radius: 30px / 60px;
+            position: absolute;
+            box-shadow: inset -4px 0 8px rgba(0,0,0,0.6);
+        }
+
+        .floating-knife-tool {
+            position: absolute;
+            left: 15px;
+            bottom: 15px;
+            width: 55px;
+            height: 55px;
+            background: #c0392b;
+            border: 3px solid #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: grab;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 50;
+        }
+
+        .doner-tray-bottom {
+            position: absolute;
+            bottom: 4px;
+            width: 90px;
+            height: 26px;
+            background: #442817;
+            border: 2px solid #6e4223;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        /* Müşteri & Baloncuk */
+        .customer-container {
+            position: absolute;
+            left: 15px;
+            bottom: 0;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
         }
 
         .customer-avatar {
-            font-size: 55px;
+            font-size: 70px;
             line-height: 1;
-            position: relative;
         }
 
         .speech-bubble {
-            position: absolute;
-            top: 2px;
             background: #ffffff;
-            color: #1a0f0a;
             border: 2px solid #f39c12;
-            border-radius: 8px;
-            padding: 3px 8px;
-            font-size: 11px;
-            font-weight: bold;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-            z-index: 100;
+            border-radius: 12px;
+            padding: 8px 12px;
+            max-width: 250px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+            margin-bottom: 45px;
+            color: #1a0f0a;
         }
 
         .speech-bubble::after {
             content: '';
             position: absolute;
-            bottom: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px 6px 0;
+            left: -10px;
+            bottom: 12px;
+            border-width: 6px 10px 6px 0;
             border-style: solid;
-            border-color: #f39c12 transparent;
-            display: block;
-            width: 0;
+            border-color: transparent #f39c12 transparent transparent;
         }
 
-        .patience-bar {
-            width: 90px;
-            height: 6px;
-            background: #222;
-            border-radius: 3px;
-            overflow: hidden;
-            border: 1px solid #f1c40f;
-            margin-bottom: 2px;
+        .dialog-text {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        .patience-fill {
-            height: 100%;
-            background: #2ecc71;
-            width: 100%;
-            transition: width 0.2s linear, background-color 0.3s;
-        }
-
-        /* Tezgah (Alt Bölüm) */
-        .counter-top {
-            width: 100%;
-            height: 62%;
-            background: #1e120b;
-            border-top: 5px solid #5c3a21;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.5);
+        .dialog-btns {
             display: flex;
+            gap: 5px;
+        }
+
+        .btn-dialog {
+            background: #e67e22;
+            border: 1px solid #d35400;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        /* Tezgah Alanı */
+        .counter-area {
+            height: 54%;
+            background: #1e120b;
+            border-top: 4px solid #5c3a21;
             padding: 6px;
+            display: flex;
             gap: 6px;
         }
 
-        /* Döner Şiş Alanı (Sol) */
-        .doner-section {
-            width: 24%;
-            height: 100%;
-            background: #2a190e;
-            border: 2px solid #4a2f19;
-            border-radius: 8px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 4px;
-        }
-
-        .doner-machine {
-            width: 85%;
-            height: 58%;
-            background: #111;
-            border: 2px solid #555;
-            border-radius: 6px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .doner-heater {
-            position: absolute;
-            right: 5px;
-            top: 10px;
-            width: 15px;
-            height: 80%;
-            background: #e67e22;
-            box-shadow: 0 0 10px #e67e22;
-            border-radius: 3px;
-        }
-
-        .doner-spit {
-            width: 6px;
-            height: 100%;
-            background: #aaa;
-            position: absolute;
-        }
-
-        .doner-meat {
-            width: 60%;
-            height: 80%;
-            background: linear-gradient(to right, #803010, #b04818, #602008);
-            border-radius: 25px / 50px;
-            position: absolute;
-            top: 10%;
-            box-shadow: inset -4px 0 8px rgba(0,0,0,0.5);
-            transition: transform 0.1s ease, height 0.2s ease, top 0.2s ease;
-        }
-
-        .cutting-knife {
-            position: absolute;
-            font-size: 26px;
-            pointer-events: none;
-            display: none;
-            z-index: 50;
-            transform: rotate(-45deg);
-        }
-
-        .cutting-knife.active {
-            display: block;
-        }
-
-        .flying-meat {
-            position: absolute;
-            font-size: 14px;
-            pointer-events: none;
-            animation: flyToTray 0.4s forwards ease-out;
-            z-index: 60;
-        }
-
-        @keyframes flyToTray {
-            0% { transform: scale(1) translate(0, 0); opacity: 1; }
-            100% { transform: scale(0.6) translate(50px, 40px); opacity: 0; }
-        }
-
-        .doner-tray {
-            width: 90%;
-            height: 32%;
-            background: #442817;
-            border: 2px solid #6e4223;
-            border-radius: 5px;
-            margin-top: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            padding: 2px;
-            text-align: center;
-        }
-
-        .meat-bits {
-            font-size: 10px;
-            color: #f1c40f;
-            font-weight: bold;
-        }
-
-        .knife-tool {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            width: 25px;
-            height: 45px;
-            background: #aaa;
-            border: 1px solid #fff;
-            border-radius: 3px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #000;
-            font-size: 9px;
-            writing-mode: vertical-rl;
-        }
-
-        .knife-tool.active {
-            border-color: #f1c40f;
-            box-shadow: 0 0 8px #f1c40f;
-            background: #f39c12;
-            color: #fff;
-        }
-
-        /* Hazırlık Tezgahı (Orta) */
-        .prep-section {
-            width: 51%;
-            height: 100%;
+        .equipment-section {
+            width: 18%;
             background: #2a190e;
             border: 2px solid #4a2f19;
             border-radius: 8px;
             padding: 4px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            display: flex;
+            flex-direction: column;
             gap: 4px;
-            overflow-y: auto;
+            align-items: center;
         }
 
-        .ingredient-box {
+        .item-box {
             background: #1c0f08;
-            border: 1px solid #6e4223;
-            border-radius: 5px;
+            border: 2px dashed #f39c12;
+            border-radius: 6px;
+            width: 100%;
+            padding: 6px 2px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2px;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-
-        .ingredient-box:hover {
-            border-color: #f39c12;
-            background: #28170c;
-        }
-
-        .ingredient-box.meat-btn {
-            background: #5c1d0c;
-            border-color: #e67e22;
-        }
-
-        .ingredient-icon {
-            font-size: 20px;
-            line-height: 1.1;
-        }
-
-        .ingredient-title {
-            font-size: 9px;
-            color: #ddd;
+            cursor: grab;
+            font-size: 10px;
             font-weight: bold;
+            color: white;
             text-align: center;
         }
 
-        /* Servis Tepsisi (Sağ Alt) */
-        .plate-section {
-            width: 25%;
-            height: 100%;
+        /* Hazırlık Masası */
+        .prep-table {
+            width: 60%;
             background: #2a190e;
             border: 2px solid #4a2f19;
             border-radius: 8px;
-            padding: 4px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: space-between;
         }
 
-        .current-plate {
+        .board-zone {
             width: 100%;
+            height: 125px;
+            background: #1c0f08;
+            border: 3px dashed #6e4223;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dürüm ve Sarma Alanı */
+        .lavash-on-board {
+            width: 210px;
+            height: 75px;
+            background: linear-gradient(to bottom, #d4b583, #b88a4c);
+            border: 2px solid #8c532b;
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 3px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .rolled-durum {
+            width: 200px;
+            height: 48px;
+            background: linear-gradient(to bottom, #e2c9a2, #c8a265);
+            border: 2px solid #7a5c29;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #3b220c;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+            font-size: 12px;
+        }
+
+        .ingredients-row {
+            display: flex;
+            gap: 4px;
+            justify-content: space-between;
+        }
+
+        .ingredient-pot {
             flex: 1;
-            background: #331f12;
-            border: 2px dashed #6e4223;
+            height: 52px;
+            background: #1c0f08;
+            border: 2px solid #6e4223;
             border-radius: 6px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            cursor: grab;
+        }
+
+        .pot-icon { font-size: 16px; }
+        .pot-title { font-size: 7px; font-weight: bold; color: #ddd; }
+
+        /* Sağ Servis Bölümü */
+        .service-section {
+            width: 22%;
+            background: #2a190e;
+            border: 2px solid #4a2f19;
+            border-radius: 8px;
             padding: 4px;
-            overflow-y: auto;
-        }
-
-        .plate-items {
             display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .plate-item-tag {
-            background: #e67e22;
-            color: white;
-            font-size: 9px;
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-weight: bold;
-        }
-
-        .action-btns {
+        .btn-action-main {
             width: 100%;
-            display: flex;
-            gap: 4px;
-            margin-top: 4px;
-        }
-
-        .btn-serve {
-            flex: 2;
-            background: #27ae60;
-            color: white;
+            padding: 8px 2px;
             border: none;
-            padding: 8px 4px;
-            border-radius: 5px;
+            border-radius: 6px;
             font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-trash {
-            flex: 1;
-            background: #c0392b;
-            color: white;
-            border: none;
-            padding: 8px 4px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
             font-size: 11px;
-        }
-
-        /* MODALLAR */
-        .modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 250;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-card {
-            background: #2c180e;
-            border: 3px solid #8c532b;
-            border-radius: 12px;
-            width: 85%;
-            max-width: 450px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 0 20px #000;
-        }
-
-        .recipe-list {
-            text-align: left;
-            margin: 10px 0;
-            font-size: 11px;
-            color: #ddd;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .recipe-item {
-            background: #1c0f08;
-            padding: 5px 8px;
-            border-radius: 5px;
-            border: 1px solid #5c3a21;
-        }
-
-        .tea-set {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 10px 0;
-        }
-
-        .tea-item {
-            cursor: pointer;
-            transition: transform 0.2s;
-            text-align: center;
-        }
-        .tea-item:hover {
-            transform: scale(1.15);
-        }
-        .tea-item span {
-            font-size: 32px;
-            display: block;
-        }
-
-        /* EV SAHNESİ */
-        #home-scene {
-            background: #110905;
-            position: relative;
-        }
-
-        .window-frame {
-            position: absolute;
-            top: 20px;
-            left: 40px;
-            width: 180px;
-            height: 140px;
-            background: #0a1526;
-            border: 6px solid #4a2f19;
-            box-shadow: inset 0 0 15px #000;
-            overflow: hidden;
-        }
-
-        .snow-particle {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(-10px); }
-            100% { transform: translateY(150px); }
-        }
-
-        .stove-area {
-            position: absolute;
-            bottom: 20px;
-            left: 60px;
-            width: 150px;
-            height: 190px;
-            background: #222;
-            border: 3px solid #111;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 0 25px rgba(230, 126, 34, 0.4);
-        }
-
-        .stove-fire {
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, #f39c12 20%, #e67e22 50%, #c0392b 80%);
-            border-radius: 50%;
-            margin-top: auto;
-            margin-bottom: 15px;
-            box-shadow: 0 0 15px #f39c12;
-            animation: flicker 0.2s infinite alternate;
-            cursor: pointer;
-        }
-
-        @keyframes flicker {
-            0% { transform: scale(0.95); opacity: 0.9; }
-            100% { transform: scale(1.05); opacity: 1; }
-        }
-
-        .teapot {
-            font-size: 30px;
-            position: absolute;
-            top: -25px;
-            cursor: pointer;
-        }
-
-        .family-table {
-            position: absolute;
-            bottom: 20px;
-            right: 40px;
-            width: 360px;
-            height: 240px;
-            background: #3d2314;
-            border: 5px solid #5c3a21;
-            border-radius: 12px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .character-box {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        .char-avatar span {
-            font-size: 36px;
-            display: block;
-        }
-
-        .piggy-bank {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            background: #8e44ad;
-            border: 2px solid #9b59b6;
-            border-radius: 8px;
-            padding: 6px 14px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        .cinematic-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
-            z-index: 300;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             color: white;
-            font-size: 20px;
-            font-style: italic;
-            opacity: 0;
+            cursor: pointer;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+        }
+
+        .btn-serve { background: #27ae60; }
+        .btn-wrap { background: #e67e22; }
+        .btn-clear { background: #c0392b; }
+
+        /* Sürüklenen Öğeler ve Bıçak Hayaletleri */
+        #drag-ghost {
+            position: fixed;
             pointer-events: none;
-            transition: opacity 1.5s ease;
+            font-size: 30px;
+            z-index: 1000;
+            display: none;
+            transform: translate(-50%, -50%);
         }
 
-        .cinematic-overlay.show {
-            opacity: 1;
-            pointer-events: all;
+        #active-tool {
+            position: fixed;
+            pointer-events: none;
+            font-size: 36px;
+            z-index: 1000;
+            display: none;
+            transform: translate(-50%, -50%);
         }
     </style>
 </head>
 <body>
 
+<div id="drag-ghost"></div>
+<div id="active-tool">🔪</div>
+
 <div id="game-container">
-    <!-- TOP HEADER -->
-    <div class="header-bar">
-        <div class="stat-box" id="day-display">📅 Gün: 1</div>
-        <div class="stat-box" id="time-display">⏰ Saat: 08:00</div>
-        <div class="stat-box" id="money-display">💰 Akçe: 150</div>
-        <div class="stat-box" id="doner-stock-display">🥩 Şiş Stok: 1</div>
-        <button class="btn-ui btn-market" onclick="toggleMarketModal()">🛒 Toptancı</button>
-        <button class="btn-ui btn-recipe" onclick="toggleRecipeModal()">📖 Tarifler</button>
-        <button class="btn-ui btn-break" id="btn-toggle-break" onclick="toggleBreak()">☕ Mola Ver</button>
-        <button class="btn-ui" onclick="toggleSound()">🎵 Müzik</button>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div>📅 Gün: <span id="day-val">1</span> / 20</div>
+        <div class="stat-badge">💰 Kasa: <span id="money-val">150</span> TL</div>
+        <div>⏰ Saat: <span id="time-val">12:00</span></div>
     </div>
 
-    <!-- 1. DÖNER DÜKKANI SAHNESİ -->
-    <div id="shop-scene" class="scene active">
-        <!-- Müşteriler -->
-        <div class="customer-area" id="customer-area"></div>
-
-        <!-- Tezgah & Mutfak -->
-        <div class="counter-top">
-            <!-- Sol: Döner Şiş & Kesim -->
-            <div class="doner-section">
-                <div style="font-size: 10px; font-weight: bold; color: #f1c40f; margin-bottom: 2px;" id="doner-title">YAPRAK DÖNER (%100)</div>
-                
-                <div class="doner-machine" id="doner-machine">
-                    <div class="doner-spit"></div>
-                    <div class="doner-heater"></div>
-                    <div class="doner-meat" id="doner-meat"></div>
-                    <div class="cutting-knife" id="cutting-knife">🔪</div>
-                </div>
-
-                <div class="doner-tray" onclick="collectSlicedMeat()">
-                    <div style="font-size: 9px; color: #aaa;">KESİLEN ET STOKU</div>
-                    <div class="meat-bits" id="meat-bits">0 Porsiyon (Tıkla Al)</div>
-                </div>
-                <div class="knife-tool" id="knife-tool" onclick="toggleKnifeTool()">🔪 BIÇAK</div>
-            </div>
-
-            <!-- Orta: Malzeme & Hazırlık -->
-            <div class="prep-section" id="prep-section">
-                <!-- Dinamik olarak günlere göre malzemeler yüklenecek -->
-            </div>
-
-            <!-- Sağ: Tepsi & Servis -->
-            <div class="plate-section">
-                <div style="font-size: 11px; font-weight: bold; color: #f1c40f;">TEPSİDEKİ SİPARİŞ</div>
-                <div class="current-plate">
-                    <div class="plate-items" id="plate-items">
-                        <span style="font-size: 10px; color: #888;">Tepsi Boş</span>
-                    </div>
-                </div>
-                <div class="action-btns">
-                    <button class="btn-serve" onclick="serveOrder()">SERVİS ET</button>
-                    <button class="btn-trash" onclick="clearPlate()">ÇÖP</button>
+    <!-- Müşteri ve Döner Ocağı -->
+    <div class="shop-view">
+        <div class="customer-container">
+            <div class="customer-avatar" id="cust-avatar">👳‍♂️</div>
+            <div class="speech-bubble">
+                <div class="dialog-text" id="dialog-text">"Hakiki yaprak dönerden bol etli ve soslu bir dürüm rica ediyorum usta."</div>
+                <div class="dialog-btns">
+                    <button class="btn-dialog" onclick="acceptOrder()">Tamam</button>
+                    <button class="btn-dialog" onclick="askClarity()">İçindekiler?</button>
                 </div>
             </div>
         </div>
+
+        <!-- Bıçağı Sürükleme Aracı -->
+        <div class="floating-knife-tool" id="knife-tool" ontouchstart="startToolDrag(event, 'knife')" onmousedown="startToolDrag(event, 'knife')">
+            🔪
+        </div>
+
+        <div class="doner-machine-area" id="doner-machine">
+            <div class="doner-spit"></div>
+            <div class="doner-meat-large" id="doner-meat"></div>
+            <div class="doner-tray-bottom">
+                Et Stok: <span id="meat-count">0.0</span> Pors.
+            </div>
+        </div>
     </div>
 
-    <!-- TOPTANCI / MARKET MODAL -->
-    <div class="modal-overlay" id="market-modal">
-        <div class="modal-card">
-            <h3 style="color: #f39c12; margin-bottom: 8px;">🛒 Toptancı Hal Pazarı</h3>
-            <p style="font-size: 11px; color: #ddd; margin-bottom: 12px;">Dükkan stoku azaldığında orjinal yaprak döner şişinizi buradan tedarik edebilirsiniz.</p>
+    <!-- Tezgah & Sürükle Bırak Alanı -->
+    <div class="counter-area">
+        <!-- Lavaş ve Doğranacak Malzemeler -->
+        <div class="equipment-section">
+            <div class="item-box" ontouchstart="startCustomDrag(event, 'Lavaş', '🫓')" onmousedown="startCustomDrag(event, 'Lavaş', '🫓')">
+                <span style="font-size: 20px;">🫓</span>
+                Lavaş<br><small>(Sürükle)</small>
+            </div>
+            <div class="item-box" style="margin-top:4px; border-color:#e67e22;" ontouchstart="startCustomDrag(event, 'Bütün Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Bütün Soğan', '🧅')">
+                <span style="font-size: 18px;">🧅</span>
+                Soğan<br><small>(Tahtada Kes)</small>
+            </div>
+            <div class="item-box" style="margin-top:4px; border-color:#e74c3c;" ontouchstart="startCustomDrag(event, 'Bütün Domates', '🍅')" onmousedown="startCustomDrag(event, 'Bütün Domates', '🍅')">
+                <span style="font-size: 18px;">🍅</span>
+                Domates<br><small>(Tahtada Kes)</small>
+            </div>
+        </div>
 
-            <div style="background: #1c0f08; padding: 10px; border-radius: 8px; border: 1px solid #5c3a21; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div style="text-align: left;">
-                    <div style="font-weight: bold; color: #f1c40f; font-size: 13px;">🥩 Çiğ Döner Şişi (100 Porsiyonluk)</div>
-                    <div style="font-size: 10px; color: #aaa;">Kasaptan taze hazırlanmış yaprak et döner şişi</div>
+        <!-- Orta Tezgah (Kesme ve Hazırlık Tahtası) -->
+        <div class="prep-table">
+            <div class="board-zone" id="board-zone">
+                <div id="board-content" style="color: #888; font-size: 10px; font-weight: bold; text-align: center;">
+                    Lavaşı veya soğan/domatesi buraya bırakın. Bıçağı üstünde gezdirip doğrayın!
                 </div>
-                <button class="btn-ui" style="background: #27ae60; border-color: #2ecc71;" onclick="buyDonerSpitFromMarket()">80 TL Satın Al</button>
             </div>
 
-            <button class="btn-ui" style="padding: 6px 20px;" onclick="toggleMarketModal()">Pazardan Çık</button>
-        </div>
-    </div>
-
-    <!-- TARİF REHBERİ MODAL -->
-    <div class="modal-overlay" id="recipe-modal">
-        <div class="modal-card">
-            <h3 style="color: #f1c40f; margin-bottom: 8px;">📖 Gelişmiş Döner & Menü Tarif Kağıdı</h3>
-            <div class="recipe-list" id="recipe-list-content">
-                <!-- Günlere göre tarifler listelenecek -->
+            <!-- Malzeme Kutuları -->
+            <div class="ingredients-row">
+                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Döner Eti', '🥩')" onmousedown="startCustomDrag(event, 'Döner Eti', '🥩')">
+                    <span class="pot-icon">🥩</span>
+                    <span class="pot-title">Et</span>
+                </div>
+                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Marul', '🥗')" onmousedown="startCustomDrag(event, 'Marul', '🥗')">
+                    <span class="pot-icon">🥗</span>
+                    <span class="pot-title">Marul</span>
+                </div>
+                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Dilim Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Dilim Soğan', '🧅')">
+                    <span class="pot-icon">🧅</span>
+                    <span class="pot-title">Soğan (Hazır)</span>
+                </div>
+                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Dilim Domates', '🍅')" onmousedown="startCustomDrag(event, 'Dilim Domates', '🍅')">
+                    <span class="pot-icon">🍅</span>
+                    <span class="pot-title">Dom. (Hazır)</span>
+                </div>
+                <div class="ingredient-pot" style="border-color:#f1c40f;" ontouchstart="startToolDrag(event, 'sauce')" onmousedown="startToolDrag(event, 'sauce')">
+                    <span class="pot-icon">🥄</span>
+                    <span class="pot-title">Sos Kepçesi</span>
+                </div>
+                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Ayran', '🥛')" onmousedown="startCustomDrag(event, 'Ayran', '🥛')">
+                    <span class="pot-icon">🥛</span>
+                    <span class="pot-title">Ayran</span>
+                </div>
             </div>
-            <button class="btn-ui" style="padding: 6px 20px;" onclick="toggleRecipeModal()">Kapat</button>
         </div>
-    </div>
 
-    <!-- MOLA MODAL OVERLAY -->
-    <div class="modal-overlay" id="break-overlay">
-        <div class="modal-card">
-            <h3 style="color: #f1c40f; margin-bottom: 8px;">☕ Esnaf Molası</h3>
-            <p style="font-size: 11px; color: #ddd;">Çayınızı içip yorgunluğunuzu atın.</p>
-            <div class="tea-set">
-                <div class="tea-item" onclick="drinkTea('Çay')"><span>☕</span><small>Tavşan Kanı</small></div>
-                <div class="tea-item" onclick="drinkTea('Kahve')"><span>☕</span><small>Türk Kahvesi</small></div>
-                <div class="tea-item" onclick="drinkTea('Lokum')"><span>🍪</span><small>Lokum</small></div>
-            </div>
-            <button class="btn-ui btn-break" style="padding: 6px 15px;" onclick="toggleBreak()">Molayı Bitir</button>
+        <!-- Sağ Butonlar -->
+        <div class="service-section">
+            <button class="btn-action-main btn-wrap" ontouchstart="startWrapDrag(event)" onmousedown="startWrapDrag(event)">🌯 PARMAKLA SAR</button>
+            <button class="btn-action-main btn-serve" onclick="serveCustomer()">🎁 MÜŞTERİYE VER</button>
+            <button class="btn-action-main btn-clear" onclick="clearBoard()">🗑️ ÇÖP</button>
         </div>
-    </div>
-
-    <!-- 2. EVE DÖNÜŞ & SICAK YUVA SAHNESİ -->
-    <div id="home-scene" class="scene">
-        <div class="window-frame" id="window-snow"></div>
-        <div class="stove-area">
-            <div class="teapot" onclick="brewStoveTea()">🫖</div>
-            <div class="stove-fire" onclick="addWoodToStove()" title="Odun at"></div>
-            <div style="font-size: 10px; color: #aaa; margin-bottom: 6px;">Döküm Soba</div>
-        </div>
-        <div class="piggy-bank">
-            <div>🪵 Ev Kumbarası</div>
-            <div id="home-piggy-val" style="font-size: 15px; color: #f1c40f;">0 Akçe</div>
-        </div>
-        <div class="family-table">
-            <h4 style="color: #f39c12; margin-bottom: 6px;">Sıcak Akşam Yemeği & Kar Manzarası</h4>
-            <div class="character-box">
-                <div class="char-avatar"><span>👨‍🍳</span><small style="font-size: 10px;">Mehmet Usta</small></div>
-                <div class="char-avatar"><span>👩</span><small style="font-size: 10px;">Elif Hanım</small></div>
-            </div>
-            <p id="family-dialog" style="font-size: 11px; color: #ddd; text-align: center; margin-bottom: 8px; font-style: italic;">
-                "Gece oldu, dışarıda lapa lapa kar yağıyor. Sobanın başında ısınma vaktı."
-            </p>
-            <div style="display: flex; gap: 6px;">
-                <button class="btn-ui" style="background: #27ae60; border-color:#2ecc71; font-size:10px;" onclick="cookHomeFood()">🍲 Sıcak Çorba</button>
-                <button class="btn-ui" style="background: #e67e22; border-color:#f39c12; font-size:10px;" onclick="roastChestnuts()">🌰 Soba Kestanesi</button>
-            </div>
-            <button class="btn-ui" style="margin-top: 8px; width: 100%; padding: 6px; font-size: 12px; background: #2980b9;" onclick="startNextDay()">
-                😴 Yatağa Git & Yeni Güne Başla
-            </button>
-        </div>
-    </div>
-
-    <div class="cinematic-overlay" id="cinematic-overlay">
-        <div id="cinematic-text" style="text-align:center; padding:0 20px;">Saat 23:00 oldu. Dükkan kapandı, karlı yuvaya geçiliyor...</div>
     </div>
 </div>
 
 <script>
     let gameState = {
-        day: 1, hour: 8, minute: 0, money: 150, piggyBank: 0,
-        donerSpitStock: 1, // Depodaki hazır döner şişi sayısı
-        slicedMeatStock: 0, donerHealth: 100, isKnifeActive: false, 
-        isOnBreak: false, soundEnabled: true, currentPlate: [], stoveWarmth: 100
+        money: 150,
+        day: 1,
+        meatStock: 0,
+        hasLavash: false,
+        isWrapped: false,
+        boardItems: [],
+        currentOnBoard: null, // 'Bütün Soğan', 'Bütün Domates', veya 'Lavaş'
+        chopCount: 0,         // Doğrama ilerlemesi
+        currentOrder: null
     };
 
-    const CUSTOMER_NAMES = [
-        "Bilge Kağan", "Alparslan", "Tomris Hatun", "Kazak Göçebesi", 
-        "Uygur Müzisyeni", "Kırgız Atlısı", "Erzurumlu Dadaş", "Özbek Tüccar", "Sultan Melikşah"
+    const CUSTOMERS = [
+        { avatar: "👳‍♂️", dialog: "Hakiki yaprak dönerden soğanlı, domatesli ve soslu bir dürüm rica ediyorum usta.", req: ["Döner Eti", "Dilim Soğan", "Dilim Domates", "Özel Sos"], price: 210 },
+        { avatar: "👨‍🦱", dialog: "Bana marullu, domatesli ve bol etli tam bir esnaf dürümü hazırla!", req: ["Döner Eti", "Marul", "Dilim Domates"], price: 200 },
+        { avatar: "👩", dialog: "Soğanlı, soslu hafif bir dürüm ve yanına ayran istiyorum.", req: ["Döner Eti", "Dilim Soğan", "Özel Sos", "Ayran"], price: 230 }
     ];
 
-    const GAME_CONTENT_BY_DAY = {
-        1: {
-            ingredients: [
-                { name: "Döner Eti", icon: "🥩", isMeat: true },
-                { name: "Taze Lavaş", icon: "🫓" },
-                { name: "Domates & Marul", icon: "🥗" },
-                { name: "Özel Sos", icon: "🥫" }
-            ],
-            menus: [
-                { name: "Lavaş Dürüm", req: ["Taze Lavaş", "Döner Eti", "Domates & Marul", "Özel Sos"], price: 180 }
-            ]
-        },
-        2: {
-            ingredients: [
-                { name: "Döner Eti", icon: "🥩", isMeat: true },
-                { name: "Taze Lavaş", icon: "🫓" },
-                { name: "Tombik Ekmek", icon: "🍞" },
-                { name: "Domates & Marul", icon: "🥗" },
-                { name: "Turşu & Soğan", icon: "🧅" },
-                { name: "Özel Sos", icon: "🥫" }
-            ],
-            menus: [
-                { name: "Lavaş Dürüm", req: ["Taze Lavaş", "Döner Eti", "Domates & Marul", "Özel Sos"], price: 180 },
-                { name: "Tombik Döner", req: ["Tombik Ekmek", "Döner Eti", "Turşu & Soğan", "Özel Sos"], price: 200 }
-            ]
-        },
-        3: {
-            ingredients: [
-                { name: "Döner Eti", icon: "🥩", isMeat: true },
-                { name: "Taze Lavaş", icon: "🫓" },
-                { name: "Tombik Ekmek", icon: "🍞" },
-                { name: "Domates & Marul", icon: "🥗" },
-                { name: "Turşu & Soğan", icon: "🧅" },
-                { name: "Özel Sos", icon: "🥫" },
-                { name: "Çıtır Patates", icon: "🍟" },
-                { name: "Köpüklü Ayran", icon: "🥛" }
-            ],
-            menus: [
-                { name: "Lavaş Dürüm", req: ["Taze Lavaş", "Döner Eti", "Domates & Marul", "Özel Sos"], price: 180 },
-                { name: "Tombik Döner", req: ["Tombik Ekmek", "Döner Eti", "Turşu & Soğan", "Özel Sos"], price: 200 },
-                { name: "Mega Dürüm", req: ["Taze Lavaş", "Döner Eti", "Domates & Marul", "Çıtır Patates", "Köpüklü Ayran"], price: 230 }
-            ]
-        },
-        4: {
-            ingredients: [
-                { name: "Döner Eti", icon: "🥩", isMeat: true },
-                { name: "Taze Lavaş", icon: "🫓" },
-                { name: "Tombik Ekmek", icon: "🍞" },
-                { name: "Domates & Marul", icon: "🥗" },
-                { name: "Turşu & Soğan", icon: "🧅" },
-                { name: "Özel Sos", icon: "🥫" },
-                { name: "Çıtır Patates", icon: "🍟" },
-                { name: "Köpüklü Ayran", icon: "🥛" },
-                { name: "Acılı Şalgam", icon: "🍷" },
-                { name: "Hatay Künefesi", icon: "🍯" }
-            ],
-            menus: [
-                { name: "Lavaş Dürüm", req: ["Taze Lavaş", "Döner Eti", "Domates & Marul", "Özel Sos"], price: 180 },
-                { name: "Tombik Döner", req: ["Tombik Ekmek", "Döner Eti", "Turşu & Soğan", "Özel Sos"], price: 200 },
-                { name: "Mega Dürüm", req: ["Taze Lavaş", "Döner Eti", "Domates & Marul", "Çıtır Patates", "Köpüklü Ayran"], price: 230 },
-                { name: "Tatlılı Menü", req: ["Tombik Ekmek", "Döner Eti", "Hatay Künefesi", "Acılı Şalgam"], price: 300 }
-            ]
-        }
-    };
-
-    let customers = [null, null, null];
-    let gameLoopInterval = null;
-    let audioCtx = null;
-    let isDraggingKnife = false;
-    let lastSliceY = 0;
-    let totalSliceDelta = 0;
-
     window.onload = function() {
-        initSnow();
-        loadDayContent();
-        renderCustomerSlots();
-        startTimer();
-        playNesetErtaşMelody();
         spawnCustomer();
-        spawnCustomer();
-        initKnifeInteraction();
+        initGlobalInteractions();
     };
-
-    function getCurrentContent() {
-        let dayKey = Math.min(gameState.day, 4);
-        return GAME_CONTENT_BY_DAY[dayKey];
-    }
-
-    function loadDayContent() {
-        const content = getCurrentContent();
-        
-        const prepSec = document.getElementById('prep-section');
-        prepSec.innerHTML = '';
-        content.ingredients.forEach(ing => {
-            const div = document.createElement('div');
-            div.className = ing.isMeat ? 'ingredient-box meat-btn' : 'ingredient-box';
-            div.onclick = () => handleIngredientClick(ing.name);
-            div.innerHTML = `
-                <div class="ingredient-icon">${ing.icon}</div>
-                <div class="ingredient-title" ${ing.isMeat ? 'style="color:#f39c12;"' : ''}>${ing.name}</div>
-            `;
-            prepSec.appendChild(div);
-        });
-
-        const recipeList = document.getElementById('recipe-list-content');
-        recipeList.innerHTML = '';
-        content.menus.forEach(menu => {
-            const item = document.createElement('div');
-            item.className = 'recipe-item';
-            item.innerHTML = `<b>⭐ ${menu.name} (${menu.price} TL):</b> ${menu.req.join(' + ')}`;
-            recipeList.appendChild(item);
-        });
-    }
-
-    function handleIngredientClick(name) {
-        if (name === "Döner Eti") {
-            if (gameState.slicedMeatStock > 0) {
-                gameState.slicedMeatStock--;
-                updateSlicedMeatStockUI();
-                addIngredient("Döner Eti");
-            } else {
-                alert("Kesilmiş döner etiniz kalmadı! Bıçakla şişten et kesmeniz gerekiyor.");
-            }
-        } else {
-            addIngredient(name);
-        }
-    }
-
-    function startTimer() {
-        if(gameLoopInterval) clearInterval(gameLoopInterval);
-        gameLoopInterval = setInterval(() => {
-            if(gameState.isOnBreak) return;
-            gameState.minute += 2;
-            if(gameState.minute >= 60) { gameState.minute = 0; gameState.hour += 1; }
-            updateUI();
-            if(Math.random() < 0.12) spawnCustomer();
-            tickPatience();
-            if(gameState.hour >= 23) {
-                clearInterval(gameLoopInterval);
-                triggerNightTransition();
-            }
-        }, 500);
-    }
-
-    function updateUI() {
-        document.getElementById('day-display').innerText = `📅 Gün: ${gameState.day}`;
-        const hStr = gameState.hour.toString().padStart(2, '0');
-        const mStr = gameState.minute.toString().padStart(2, '0');
-        document.getElementById('time-display').innerText = `⏰ Saat: ${hStr}:${mStr}`;
-        document.getElementById('money-display').innerText = `💰 Akçe: ${gameState.money}`;
-        document.getElementById('doner-stock-display').innerText = `🥩 Şiş Stok: ${gameState.donerSpitStock}`;
-    }
-
-    function updateSlicedMeatStockUI() {
-        document.getElementById('meat-bits').innerText = `${gameState.slicedMeatStock} Porsiyon (Tıkla Al)`;
-    }
-
-    function toggleKnifeTool() {
-        gameState.isKnifeActive = !gameState.isKnifeActive;
-        const knifeBtn = document.getElementById('knife-tool');
-        if(gameState.isKnifeActive) {
-            knifeBtn.classList.add('active');
-        } else {
-            knifeBtn.classList.remove('active');
-            document.getElementById('cutting-knife').classList.remove('active');
-        }
-    }
-
-    function toggleMarketModal() {
-        const modal = document.getElementById('market-modal');
-        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    function buyDonerSpitFromMarket() {
-        if (gameState.money >= 80) {
-            gameState.money -= 80;
-            gameState.donerSpitStock++;
-            updateUI();
-            playSound('coin');
-            alert("Kasaptan 1 adet taze Çiğ Döner Şişi satın aldınız! Deponuz güncellendi.");
-        } else {
-            alert("Toptancıdan döner almak için en az 80 TL paranız olmalıdır!");
-        }
-    }
-
-    function initKnifeInteraction() {
-        const machine = document.getElementById('doner-machine');
-        const knifeElement = document.getElementById('cutting-knife');
-
-        function startDrag(e) {
-            if(!gameState.isKnifeActive || gameState.donerHealth <= 0) return;
-            isDraggingKnife = true;
-            lastSliceY = e.clientY || (e.touches && e.touches[0].clientY);
-            totalSliceDelta = 0;
-            knifeElement.classList.add('active');
-            e.preventDefault();
-        }
-
-        function onDrag(e) {
-            if(!isDraggingKnife || !gameState.isKnifeActive) return;
-            const currentY = e.clientY || (e.touches && e.touches[0].clientY);
-            const deltaY = currentY - lastSliceY;
-            totalSliceDelta += Math.abs(deltaY);
-
-            const rect = machine.getBoundingClientRect();
-            const clientX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-            const clientY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
-
-            knifeElement.style.left = `${clientX - 10}px`;
-            knifeElement.style.top = `${clientY - 20}px`;
-
-            if (totalSliceDelta > 35) {
-                totalSliceDelta = 0;
-                triggerSliceEffect(machine, clientX, clientY);
-            }
-
-            lastSliceY = currentY;
-            e.preventDefault();
-        }
-
-        function endDrag() {
-            if (!isDraggingKnife) return;
-            isDraggingKnife = false;
-            knifeElement.classList.remove('active');
-        }
-
-        machine.addEventListener('mousedown', startDrag);
-        window.addEventListener('mousemove', onDrag);
-        window.addEventListener('mouseup', endDrag);
-
-        machine.addEventListener('touchstart', startDrag, {passive: false});
-        window.addEventListener('touchmove', onDrag, {passive: false});
-        window.addEventListener('touchend', endDrag);
-    }
-
-    function triggerSliceEffect(container, x, y) {
-        if(gameState.donerHealth <= 0) {
-            alert("Döner bitti! Lütfen depodan yeni döner şişi takın.");
-            return;
-        }
-
-        playSound('slice');
-        playSound('sizzle');
-
-        // Yavaş tükenme: her kesimde sadece %1 azalır!
-        gameState.donerHealth -= 1; 
-        updateDonerMeatVisual();
-
-        const meat = document.getElementById('doner-meat');
-        meat.style.transform = "scaleX(0.92)";
-        setTimeout(() => meat.style.transform = "scaleX(1)", 80);
-
-        const flying = document.createElement('div');
-        flying.className = 'flying-meat';
-        flying.innerText = '🥩';
-        flying.style.left = `${x}px`;
-        flying.style.top = `${y}px`;
-        container.appendChild(flying);
-        setTimeout(() => flying.remove(), 400);
-
-        gameState.slicedMeatStock++;
-        updateSlicedMeatStockUI();
-    }
-
-    function updateDonerMeatVisual() {
-        const meat = document.getElementById('doner-meat');
-        if(gameState.donerHealth <= 0) {
-            meat.style.height = '0%';
-            document.getElementById('doner-title').innerText = "YAPRAK DÖNER (BİTTİ! - Tıkla Yenisini Tak)";
-        } else {
-            meat.style.height = `${Math.max(15, gameState.donerHealth * 0.8)}%`;
-            document.getElementById('doner-title').innerText = `YAPRAK DÖNER (%${gameState.donerHealth})`;
-        }
-    }
-
-    // Döner bittiğinde depodan yeni döner takma mekanizması
-    document.getElementById('doner-machine').onclick = function() {
-        if(gameState.donerHealth <= 0) {
-            if(gameState.donerSpitStock > 0) {
-                gameState.donerSpitStock--;
-                gameState.donerHealth = 100;
-                updateDonerMeatVisual();
-                updateUI();
-                playSound('coin');
-                alert("Depodaki yedek döner şişini başarıyla makineye taktınız!");
-            } else {
-                alert("Deponuzda hiç yedek döner şişi yok! '🛒 Toptancı' butonundan satın almalısınız.");
-            }
-        }
-    };
-
-    function collectSlicedMeat() {
-        if(gameState.slicedMeatStock > 0) {
-            gameState.slicedMeatStock--;
-            updateSlicedMeatStockUI();
-            addIngredient('Döner Eti');
-        }
-    }
-
-    function addIngredient(item) {
-        if(gameState.currentPlate.length >= 6) return;
-        gameState.currentPlate.push(item);
-        renderPlate();
-        playSound('pop');
-    }
-
-    function renderPlate() {
-        const container = document.getElementById('plate-items');
-        if(gameState.currentPlate.length === 0) {
-            container.innerHTML = `<span style="font-size: 10px; color: #888;">Tepsi Boş</span>`;
-            return;
-        }
-        container.innerHTML = '';
-        gameState.currentPlate.forEach(item => {
-            const tag = document.createElement('span');
-            tag.className = 'plate-item-tag';
-            tag.innerText = item;
-            container.appendChild(tag);
-        });
-    }
-
-    function clearPlate() {
-        gameState.currentPlate = [];
-        renderPlate();
-    }
-
-    function renderCustomerSlots() {
-        const area = document.getElementById('customer-area');
-        area.innerHTML = '';
-        for(let i=0; i<3; i++) {
-            const slot = document.createElement('div');
-            slot.className = 'customer-slot';
-            slot.id = `cust-slot-${i}`;
-            slot.onclick = () => serveOrderToCustomer(i);
-            area.appendChild(slot);
-        }
-    }
 
     function spawnCustomer() {
-        const emptyIndices = [];
-        customers.forEach((c, idx) => { if(c === null) emptyIndices.push(idx); });
-        if(emptyIndices.length === 0) return;
-
-        const slotIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-        const name = CUSTOMER_NAMES[Math.floor(Math.random() * CUSTOMER_NAMES.length)];
-        
-        const content = getCurrentContent();
-        const recipe = content.menus[Math.floor(Math.random() * content.menus.length)];
-
-        customers[slotIdx] = { name: name, recipe: recipe, patience: 100 };
-        renderCustomer(slotIdx);
+        gameState.currentOrder = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+        document.getElementById('cust-avatar').innerText = gameState.currentOrder.avatar;
+        document.getElementById('dialog-text').innerText = `"${gameState.currentOrder.dialog}"`;
     }
 
-    function renderCustomer(idx) {
-        const slot = document.getElementById(`cust-slot-${idx}`);
-        const c = customers[idx];
-        if(!c) { slot.innerHTML = ''; return; }
+    function acceptOrder() { document.getElementById('dialog-text').innerText = '"Bekliyorum usta, ellerine sağlık!"'; }
+    function askClarity() { alert("İstenenler: " + gameState.currentOrder.req.join(', ')); }
 
-        slot.innerHTML = `
-            <div class="speech-bubble"><span>🛒</span> ${c.recipe.name} (${c.recipe.price}₺)</div>
-            <div class="patience-bar"><div class="patience-fill" id="pat-fill-${idx}" style="width: ${c.patience}%;"></div></div>
-            <div class="customer-avatar">👳‍♂️</div>
-            <div style="font-size: 10px; font-weight: bold; color: #f1c40f;">${c.name}</div>
-        `;
+    // --- SÜRÜKLE BIRAK & KESME MOTORU ---
+    let activeDragData = null;
+    let activeToolType = null; // 'knife', 'sauce', 'wrap'
+    const ghost = document.getElementById('drag-ghost');
+    const activeTool = document.getElementById('active-tool');
+
+    function startCustomDrag(e, name, icon) {
+        e.preventDefault();
+        activeToolType = null;
+        activeDragData = { name, icon };
+        ghost.innerText = icon;
+        ghost.style.display = 'block';
+        moveElement(e, ghost);
     }
 
-    function tickPatience() {
-        customers.forEach((c, idx) => {
-            if(c) {
-                c.patience -= 0.12;
-                const fill = document.getElementById(`pat-fill-${idx}`);
-                if(fill) {
-                    fill.style.width = `${c.patience}%`;
-                    if(c.patience < 30) fill.style.backgroundColor = '#e74c3c';
+    function startToolDrag(e, type) {
+        e.preventDefault();
+        activeDragData = null;
+        activeToolType = type;
+        activeTool.innerText = type === 'knife' ? '🔪' : '🥄';
+        activeTool.style.display = 'block';
+        moveElement(e, activeTool);
+    }
+
+    let wrapStartY = 0;
+    function startWrapDrag(e) {
+        e.preventDefault();
+        if(!gameState.hasLavash || gameState.boardItems.length === 0) {
+            alert("Sarmak için önce lavaş ve malzeme koymalısın!");
+            return;
+        }
+        activeToolType = 'wrap';
+        wrapStartY = e.clientY || (e.touches && e.touches[0].clientY);
+        activeTool.innerText = '🌯';
+        activeTool.style.display = 'block';
+        moveElement(e, activeTool);
+    }
+
+    function initGlobalInteractions() {
+        window.addEventListener('mousemove', handleGlobalMove);
+        window.addEventListener('touchmove', handleGlobalMove, {passive: false});
+
+        window.addEventListener('mouseup', handleGlobalEnd);
+        window.addEventListener('touchend', handleGlobalEnd);
+    }
+
+    let lastMoveY = 0;
+
+    function handleGlobalMove(e) {
+        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+        if (activeDragData) {
+            moveElement(e, ghost);
+        } else if (activeToolType) {
+            moveElement(e, activeTool);
+
+            const machine = document.getElementById('doner-machine').getBoundingClientRect();
+            const boardRect = document.getElementById('board-zone').getBoundingClientRect();
+
+            // 1. BIÇAK KONTROLÜ
+            if (activeToolType === 'knife') {
+                // A) Döner ocağında et kesme
+                if (clientX >= machine.left && clientX <= machine.right && clientY >= machine.top && clientY <= machine.bottom) {
+                    let deltaY = Math.abs(clientY - lastMoveY);
+                    if (deltaY > 12) {
+                        gameState.meatStock += 0.1;
+                        document.getElementById('meat-count').innerText = gameState.meatStock.toFixed(1);
+                    }
                 }
-                if(c.patience <= 0) { customers[idx] = null; renderCustomer(idx); }
+                // B) Kesme tahtasında soğan / domates doğrama
+                else if (clientX >= boardRect.left && clientX <= boardRect.right && clientY >= boardRect.top && clientY <= boardRect.bottom) {
+                    if (gameState.currentOnBoard === 'Bütün Soğan' || gameState.currentOnBoard === 'Bütün Domates') {
+                        let deltaY = Math.abs(clientY - lastMoveY);
+                        if (deltaY > 10) {
+                            gameState.chopCount++;
+                            renderBoard();
+                            if (gameState.chopCount >= 8) { // 8 kesme hareketinde doğranır
+                                let slicedName = gameState.currentOnBoard === 'Bütün Soğan' ? 'Dilim Soğan' : 'Dilim Domates';
+                                let slicedIcon = gameState.currentOnBoard === 'Bütün Soğan' ? '🧅' : '🍅';
+                                alert(`${gameState.currentOnBoard} başarıyla doğrandı!`);
+                                gameState.currentOnBoard = null;
+                                gameState.chopCount = 0;
+                                gameState.boardItems.push({ name: slicedName, icon: slicedIcon });
+                                renderBoard();
+                            }
+                        }
+                    }
+                }
             }
-        });
+        }
+        lastMoveY = clientY;
+        if(e.cancelable) e.preventDefault();
     }
 
-    function serveOrderToCustomer(idx) {
-        const c = customers[idx];
-        if(!c || gameState.currentPlate.length === 0) return;
-        const req = c.recipe.req;
-        const matches = req.every(r => gameState.currentPlate.includes(r));
-        if(matches) {
-            gameState.money += c.recipe.price;
-            customers[idx] = null; renderCustomer(idx); clearPlate(); playSound('coin');
-            updateUI();
+    function moveElement(e, el) {
+        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        el.style.left = `${clientX}px`;
+        el.style.top = `${clientY}px`;
+    }
+
+    function handleGlobalEnd(e) {
+        let clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        let clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+        const boardRect = document.getElementById('board-zone').getBoundingClientRect();
+        const isInBoard = (clientX >= boardRect.left && clientX <= boardRect.right && clientY >= boardRect.top && clientY <= boardRect.bottom);
+
+        ghost.style.display = 'none';
+        activeTool.style.display = 'none';
+
+        if (activeDragData && isInBoard) {
+            processDropItem(activeDragData);
+        } else if (activeToolType === 'sauce' && isInBoard) {
+            if(gameState.hasLavash && !gameState.isWrapped) {
+                if(!gameState.boardItems.some(i => i.name === 'Özel Sos')) {
+                    gameState.boardItems.push({ name: 'Özel Sos', icon: '🥫' });
+                    renderBoard();
+                }
+            }
+        } else if (activeToolType === 'wrap') {
+            let wrapEndY = clientY;
+            if (wrapStartY - wrapEndY > 40) {
+                if(gameState.hasLavash && gameState.boardItems.length > 0) {
+                    gameState.isWrapped = true;
+                    renderBoard();
+                }
+            }
+        }
+
+        activeDragData = null;
+        activeToolType = null;
+    }
+
+    function processDropItem(data) {
+        if(data.name === 'Lavaş') {
+            gameState.hasLavash = true;
+            gameState.isWrapped = false;
+            gameState.boardItems = [];
+            gameState.currentOnBoard = null;
+            renderBoard();
+            return;
+        }
+
+        // Bütün soğan veya domatesi kesme tahtasına koyma
+        if(data.name === 'Bütün Soğan' || data.name === 'Bütün Domates') {
+            if(gameState.hasLavash) {
+                alert("Lavaşın üzerine bütün sebze konulmaz! Önce tahtayı temizleyin.");
+                return;
+            }
+            gameState.currentOnBoard = data.name;
+            gameState.chopCount = 0;
+            renderBoard();
+            return;
+        }
+
+        if(!gameState.hasLavash) {
+            alert("Önce tezgaha lavaş koymalısın!");
+            return;
+        }
+        if(gameState.isWrapped) {
+            alert("Dürüm zaten sarıldı!");
+            return;
+        }
+
+        if(data.name === 'Döner Eti') {
+            if(gameState.meatStock < 1) {
+                alert("Yeterli kesilmiş etin yok! Sol alttaki bıçağı tutup dönerde yukarı-aşağı hareket ettirerek et kesmelisin.");
+                return;
+            }
+            gameState.meatStock -= 1;
+            document.getElementById('meat-count').innerText = gameState.meatStock.toFixed(1);
+        }
+
+        gameState.boardItems.push(data);
+        renderBoard();
+    }
+
+    function renderBoard() {
+        const board = document.getElementById('board-content');
+        
+        // Eğer tahtada kesilmeyi bekleyen bütün sebze varsa
+        if(gameState.currentOnBoard) {
+            let icon = gameState.currentOnBoard === 'Bütün Soğan' ? '🧅' : '🍅';
+            let progressPercent = (gameState.chopCount / 8) * 100;
+            board.innerHTML = `
+                <div style="text-align:center;">
+                    <div style="font-size:32px;">${icon}</div>
+                    <div style="font-size:9px; color:#f1c40f; font-weight:bold; margin-top:2px;">Bıçakla Yukarı-Aşağı Doğra! (${gameState.chopCount}/8)</div>
+                    <div style="width:100px; height:6px; background:#444; border-radius:3px; margin:4px auto; overflow:hidden;">
+                        <div style="width:${progressPercent}%; height:100%; background:#27ae60;"></div>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        if(!gameState.hasLavash) {
+            board.innerHTML = "Lavaşı veya soğan/domatesi buraya bırakın. Bıçağı üstünde gezdirip doğrayın!";
+            return;
+        }
+
+        if(gameState.isWrapped) {
+            board.innerHTML = `<div class="rolled-durum">🌯 Hakiki Sarılmış Dürüm</div>`;
         } else {
-            alert(`Sipariş Yanlış!\n${c.name} şunu istiyor: ${req.join(', ')}`);
+            let itemsHTML = gameState.boardItems.map(i => `<span style="font-size:20px; margin: 0 2px;" title="${i.name}">${i.icon}</span>`).join('');
+            board.innerHTML = `<div class="lavash-on-board">${itemsHTML || '<span style="font-size:10px; color:#a6844d;">(Malzemeleri bırakın, kepçeyle sos dökün)</span>'}</div>`;
         }
     }
 
-    function serveOrder() {
-        if(gameState.currentPlate.length === 0) return;
-        let served = false;
-        for(let idx = 0; idx < customers.length; idx++) {
-            const c = customers[idx];
-            if(c) {
-                const req = c.recipe.req;
-                const matches = req.every(r => gameState.currentPlate.includes(r));
-                if(matches) {
-                    gameState.money += c.recipe.price;
-                    customers[idx] = null; renderCustomer(idx); clearPlate(); playSound('coin');
-                    updateUI();
-                    served = true; break;
-                }
-            }
+    function serveCustomer() {
+        if(!gameState.isWrapped) {
+            alert("Müşteriye vermeden önce parmağınızı aşağıdan yukarıya sürükleyerek dürümü sarmanız gerekiyor!");
+            return;
         }
-        if(!served) alert("Tepsideki malzeme müşterilerin istedikleriyle eşleşmiyor!");
-    }
 
-    function toggleRecipeModal() {
-        const modal = document.getElementById('recipe-modal');
-        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-    }
+        const req = gameState.currentOrder.req;
+        const currentNames = gameState.boardItems.map(i => i.name);
+        const matches = req.every(r => currentNames.includes(r));
 
-    function toggleBreak() {
-        gameState.isOnBreak = !gameState.isOnBreak;
-        const overlay = document.getElementById('break-overlay');
-        const btn = document.getElementById('btn-toggle-break');
-        if(gameState.isOnBreak) { overlay.style.display = 'flex'; btn.innerText = '▶ Bitir'; }
-        else { overlay.style.display = 'none'; btn.innerText = '☕ Mola Ver'; }
-    }
-
-    function drinkTea(type) {
-        playSound('sip'); alert(`Mehmet Usta taze ${type} ikramından bir yudum aldı.`);
-    }
-
-    function triggerNightTransition() {
-        const cinematic = document.getElementById('cinematic-overlay');
-        cinematic.classList.add('show');
-        gameState.piggyBank += Math.floor(gameState.money * 0.4);
-        gameState.money = Math.floor(gameState.money * 0.6);
-        setTimeout(() => {
-            document.getElementById('shop-scene').classList.remove('active');
-            document.getElementById('home-scene').classList.add('active');
-            document.getElementById('home-piggy-val').innerText = `${gameState.piggyBank} Akçe`;
-            cinematic.classList.remove('show');
-        }, 2000);
-    }
-
-    function addWoodToStove() {
-        gameState.stoveWarmth = Math.min(100, gameState.stoveWarmth + 20);
-        playSound('crackle');
-        document.getElementById('family-dialog').innerText = '"Sobaya odun attın, ev mis gibi ısındı, dışarıdaki kar daha da güzel görünüyor."';
-    }
-
-    function brewStoveTea() {
-        playSound('sip'); document.getElementById('family-dialog').innerText = '"Soba üstünde çay demlendi, Elif Hanım gülümsedi."';
-    }
-
-    function cookHomeFood() {
-        document.getElementById('family-dialog').innerText = 'Elif Hanım: "Ellerine sağlık Mehmet\'im, sıcak çorba içimizi ısıttı."';
-        playSound('pop');
-    }
-
-    function roastChestnuts() {
-        document.getElementById('family-dialog').innerText = 'Elif Hanım: "Soba üzerinde kestaneler patlıyor, harika bir kış akşamı!"';
-        playSound('crackle');
-    }
-
-    function startNextDay() {
-        gameState.day += 1; 
-        gameState.hour = 8; 
-        gameState.minute = 0; 
-        gameState.money += 30;
-        
-        // Eğer makinede döner bittiyse ve depoda varsa otomatik bir tanesini takar
-        if (gameState.donerHealth <= 0 && gameState.donerSpitStock > 0) {
-            gameState.donerSpitStock--;
-            gameState.donerHealth = 100;
-        }
-        
-        updateDonerMeatVisual();
-        customers = [null, null, null]; 
-        loadDayContent();
-        renderCustomerSlots();
-        document.getElementById('home-scene').classList.remove('active');
-        document.getElementById('shop-scene').classList.add('active');
-        updateUI();
-        startTimer(); 
-        spawnCustomer(); 
-        spawnCustomer();
-    }
-
-    function initSnow() {
-        const win = document.getElementById('window-snow');
-        for(let i=0; i<25; i++) {
-            const flake = document.createElement('div');
-            flake.className = 'snow-particle';
-            flake.style.width = `${Math.random()*4 + 2}px`;
-            flake.style.height = flake.style.width;
-            flake.style.left = `${Math.random()*170}px`;
-            flake.style.animationDuration = `${Math.random()*2.5 + 1.5}s`;
-            flake.style.animationDelay = `${Math.random()*2}s`;
-            win.appendChild(flake);
+        if(matches) {
+            gameState.money += gameState.currentOrder.price;
+            document.getElementById('money-val').innerText = gameState.money;
+            alert(`Helal olsun Usta! +${gameState.currentOrder.price} TL Kazandın.`);
+            clearBoard();
+            spawnCustomer();
+        } else {
+            alert("Müşteri bu malzemeleri istememişti, sipariş yanlış!");
         }
     }
 
-    function playSound(type) {
-        if(!gameState.soundEnabled) return;
-        try {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if(type === 'slice') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            } else if(type === 'coin') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(987, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(1318, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } else if(type === 'pop') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            }
-        } catch(e) {}
-    }
-
-    function playNesetErtaşMelody() {
-        setInterval(() => {
-            if(gameState.soundEnabled && Math.random() < 0.3) {
-                try {
-                    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const notes = [293.66, 329.63, 349.23, 392.00, 440.00];
-                    const freq = notes[Math.floor(Math.random()*notes.length)];
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-                    osc.connect(gain); gain.connect(audioCtx.destination);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-                } catch(e) {}
-            }
-        }, 800);
-    }
-
-    function toggleSound() {
-        gameState.soundEnabled = !gameState.soundEnabled;
-        event.target.innerText = `🎵 Müzik: ${gameState.soundEnabled ? 'Açık' : 'Kapalı'}`;
+    function clearBoard() {
+        gameState.hasLavash = false;
+        gameState.isWrapped = false;
+        gameState.boardItems = [];
+        gameState.currentOnBoard = null;
+        gameState.chopCount = 0;
+        renderBoard();
     }
 </script>
 </body>
 </html>
-
