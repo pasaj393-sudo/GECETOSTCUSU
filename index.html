@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Efsane Dönerci: Hakiki Usta Simülasyonu</title>
+    <title>Efsane Dönerci & Kebap Sarayı: Hakiki Usta</title>
     <style>
         * {
             box-sizing: border-box;
@@ -27,9 +27,9 @@
 
         #game-container {
             width: 100%;
-            max-width: 950px;
+            max-width: 980px;
             height: 98vh;
-            max-height: 600px;
+            max-height: 620px;
             background: #2b1810;
             border: 5px solid #5c3a21;
             border-radius: 12px;
@@ -63,16 +63,60 @@
             color: #f1c40f;
         }
 
+        .btn-top-menu {
+            background: #e67e22;
+            border: 1px solid #d35400;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
         /* Dükkan Görünümü */
         .shop-view {
-            height: 46%;
-            background: #3a2312;
+            height: 44%;
+            background: linear-gradient(to bottom, #4a2f1b, #2c180e);
             position: relative;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
+            align-items: flex-end;
             border-bottom: 4px solid #5c3a21;
+            overflow: hidden;
+        }
+
+        .restaurant-interior {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 420px;
+            height: 120px;
+            display: flex;
+            gap: 20px;
+            opacity: 0.85;
+            pointer-events: none;
+        }
+
+        .table-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chair {
+            width: 16px;
+            height: 26px;
+            background: #3b220c;
+            border: 1px solid #5c3a21;
+            border-radius: 4px;
+        }
+
+        .table {
+            width: 50px;
+            height: 32px;
+            background: #6e4223;
+            border: 2px solid #8c532b;
+            border-radius: 4px;
         }
 
         /* Döner Ocağı */
@@ -80,8 +124,8 @@
             position: absolute;
             right: 15px;
             bottom: 10px;
-            width: 105px;
-            height: 190px;
+            width: 100px;
+            height: 180px;
             background: #111;
             border: 3px solid #555;
             border-radius: 8px;
@@ -99,8 +143,8 @@
         }
 
         .doner-meat-large {
-            width: 65px;
-            height: 120px;
+            width: 60px;
+            height: 110px;
             background: linear-gradient(to right, #803010, #b04818, #602008);
             border-radius: 30px / 60px;
             position: absolute;
@@ -111,15 +155,15 @@
             position: absolute;
             left: 15px;
             bottom: 15px;
-            width: 55px;
-            height: 55px;
+            width: 50px;
+            height: 50px;
             background: #c0392b;
             border: 3px solid #e74c3c;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
+            font-size: 24px;
             cursor: grab;
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             z-index: 50;
@@ -128,8 +172,8 @@
         .doner-tray-bottom {
             position: absolute;
             bottom: 4px;
-            width: 90px;
-            height: 26px;
+            width: 85px;
+            height: 24px;
             background: #442817;
             border: 2px solid #6e4223;
             border-radius: 4px;
@@ -141,6 +185,19 @@
             color: #f1c40f;
         }
 
+        .falling-meat-piece {
+            position: absolute;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 100;
+            animation: fallToTray 0.4s ease-out forwards;
+        }
+
+        @keyframes fallToTray {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(40px) scale(0.8); opacity: 0.9; }
+        }
+
         /* Müşteri & Baloncuk */
         .customer-container {
             position: absolute;
@@ -149,10 +206,11 @@
             display: flex;
             align-items: flex-end;
             gap: 10px;
+            z-index: 5;
         }
 
         .customer-avatar {
-            font-size: 70px;
+            font-size: 65px;
             line-height: 1;
         }
 
@@ -161,10 +219,10 @@
             border: 2px solid #f39c12;
             border-radius: 12px;
             padding: 8px 12px;
-            max-width: 250px;
+            max-width: 300px;
             box-shadow: 0 3px 6px rgba(0,0,0,0.3);
             position: relative;
-            margin-bottom: 45px;
+            margin-bottom: 40px;
             color: #1a0f0a;
         }
 
@@ -182,6 +240,17 @@
             font-size: 11px;
             font-weight: bold;
             margin-bottom: 5px;
+        }
+
+        .order-progress-badge {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
         }
 
         .dialog-btns {
@@ -202,23 +271,23 @@
 
         /* Tezgah Alanı */
         .counter-area {
-            height: 54%;
+            height: 56%;
             background: #1e120b;
             border-top: 4px solid #5c3a21;
-            padding: 6px;
+            padding: 5px;
             display: flex;
-            gap: 6px;
+            gap: 5px;
         }
 
         .equipment-section {
-            width: 18%;
+            width: 17%;
             background: #2a190e;
             border: 2px solid #4a2f19;
             border-radius: 8px;
             padding: 4px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             align-items: center;
         }
 
@@ -227,13 +296,13 @@
             border: 2px dashed #f39c12;
             border-radius: 6px;
             width: 100%;
-            padding: 6px 2px;
+            padding: 4px 2px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: grab;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
             color: white;
             text-align: center;
@@ -241,11 +310,11 @@
 
         /* Hazırlık Masası */
         .prep-table {
-            width: 60%;
+            width: 61%;
             background: #2a190e;
             border: 2px solid #4a2f19;
             border-radius: 8px;
-            padding: 6px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -253,7 +322,7 @@
 
         .board-zone {
             width: 100%;
-            height: 125px;
+            height: 120px;
             background: #1c0f08;
             border: 3px dashed #6e4223;
             border-radius: 6px;
@@ -264,45 +333,47 @@
             overflow: hidden;
         }
 
-        /* Dürüm ve Sarma Alanı */
-        .lavash-on-board {
-            width: 210px;
+        .plate-on-board {
+            width: 220px;
             height: 75px;
-            background: linear-gradient(to bottom, #d4b583, #b88a4c);
-            border: 2px solid #8c532b;
-            border-radius: 35px;
+            background: radial-gradient(circle, #fdfbf7, #e3dec9);
+            border: 3px solid #b08968;
+            border-radius: 40px;
             display: flex;
             align-items: center;
+            justify-content: center;
             padding: 0 10px;
-            gap: 3px;
+            gap: 4px;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        .rolled-durum {
-            width: 200px;
-            height: 48px;
-            background: linear-gradient(to bottom, #e2c9a2, #c8a265);
-            border: 2px solid #7a5c29;
-            border-radius: 24px;
+        .finished-dish {
+            width: 210px;
+            height: 50px;
+            background: linear-gradient(to bottom, #d4a373, #bc6c25);
+            border: 2px solid #fff;
+            border-radius: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: #3b220c;
+            color: #fff;
+            font-size: 11px;
             box-shadow: 0 3px 6px rgba(0,0,0,0.5);
-            font-size: 12px;
         }
 
         .ingredients-row {
             display: flex;
-            gap: 4px;
+            gap: 3px;
             justify-content: space-between;
+            overflow-x: auto;
         }
 
         .ingredient-pot {
+            min-width: 40px;
             flex: 1;
-            height: 52px;
+            height: 50px;
             background: #1c0f08;
             border: 2px solid #6e4223;
             border-radius: 6px;
@@ -313,8 +384,8 @@
             cursor: grab;
         }
 
-        .pot-icon { font-size: 16px; }
-        .pot-title { font-size: 7px; font-weight: bold; color: #ddd; }
+        .pot-icon { font-size: 15px; }
+        .pot-title { font-size: 6px; font-weight: bold; color: #ddd; text-align: center; }
 
         /* Sağ Servis Bölümü */
         .service-section {
@@ -330,7 +401,7 @@
 
         .btn-action-main {
             width: 100%;
-            padding: 8px 2px;
+            padding: 7px 2px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
@@ -344,7 +415,39 @@
         .btn-wrap { background: #e67e22; }
         .btn-clear { background: #c0392b; }
 
-        /* Sürüklenen Öğeler ve Bıçak Hayaletleri */
+        /* MODALLAR */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            background: #2c180e;
+            border: 3px solid #8c532b;
+            border-radius: 12px;
+            width: 85%; max-width: 440px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 15px; text-align: center;
+            color: white;
+        }
+
+        .recipe-row {
+            background: #1c0f08;
+            border: 1px solid #5c3a21;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            text-align: left;
+            font-size: 11px;
+        }
+
         #drag-ghost {
             position: fixed;
             pointer-events: none;
@@ -369,28 +472,55 @@
 <div id="drag-ghost"></div>
 <div id="active-tool">🔪</div>
 
+<!-- TARİF DEFTERİ MODALI -->
+<div class="modal-overlay" id="recipe-modal">
+    <div class="modal-card">
+        <h3 style="color: #f39c12; margin-bottom: 10px;">📖 Usta Tarif Defteri</h3>
+        <div id="recipe-list-container" style="margin-bottom: 12px;"></div>
+        <button class="btn-action-main btn-wrap" style="width: 150px;" onclick="toggleRecipeModal()">Kapat</button>
+    </div>
+</div>
+
+<!-- GÜN SONU / MARKET MODALI -->
+<div class="modal-overlay" id="end-day-modal">
+    <div class="modal-card">
+        <h3 style="color: #f39c12; margin-bottom: 8px;">🌙 Gün Bitti (Saat 20:00)</h3>
+        <p style="font-size: 11px; color: #ddd; margin-bottom: 10px;" id="day-summary-text">Harika iş çıkardın usta!</p>
+        <div id="new-recipe-unlocked-box" style="background:#1c0f08; border:2px solid #f39c12; padding:8px; border-radius:6px; margin-bottom:10px; font-size:11px; color:#f1c40f;"></div>
+        <button class="btn-action-main btn-serve" onclick="startNextDay()">Yeni Güne Başla ☀️</button>
+    </div>
+</div>
+
 <div id="game-container">
     <!-- Top Bar -->
     <div class="top-bar">
-        <div>📅 Gün: <span id="day-val">1</span> / 20</div>
-        <div class="stat-badge">💰 Kasa: <span id="money-val">150</span> TL</div>
-        <div>⏰ Saat: <span id="time-val">12:00</span></div>
+        <div>📅 Gün: <span id="day-val">1</span></div>
+        <div class="stat-badge">💰 Kasa: <span id="money-val">250</span> TL</div>
+        <button class="btn-top-menu" onclick="toggleRecipeModal()">📖 Tarifler</button>
+        <div>⏰ Saat: <span id="time-val">08:00</span></div>
     </div>
 
-    <!-- Müşteri ve Döner Ocağı -->
+    <!-- Dükkan Görünümü -->
     <div class="shop-view">
+        <div class="restaurant-interior">
+            <div class="table-group"><div class="chair"></div><div class="table"></div><div class="chair"></div></div>
+            <div class="table-group"><div class="chair"></div><div class="table"></div><div class="chair"></div></div>
+            <div class="table-group"><div class="chair"></div><div class="table"></div><div class="chair"></div></div>
+        </div>
+
         <div class="customer-container">
             <div class="customer-avatar" id="cust-avatar">👳‍♂️</div>
             <div class="speech-bubble">
-                <div class="dialog-text" id="dialog-text">"Hakiki yaprak dönerden bol etli ve soslu bir dürüm rica ediyorum usta."</div>
-                <div class="dialog-btns">
+                <div class="dialog-text" id="dialog-text">"Usta kolay gelsin, siparişim olacak."</div>
+                <div id="order-badge-area"></div>
+                <div class="dialog-btns" id="dialog-buttons">
                     <button class="btn-dialog" onclick="acceptOrder()">Tamam</button>
-                    <button class="btn-dialog" onclick="askClarity()">İçindekiler?</button>
+                    <button class="btn-dialog" onclick="askClarity()">Ne İstiyor?</button>
                 </div>
             </div>
         </div>
 
-        <!-- Bıçağı Sürükleme Aracı -->
+        <!-- Bıçak Aracı -->
         <div class="floating-knife-tool" id="knife-tool" ontouchstart="startToolDrag(event, 'knife')" onmousedown="startToolDrag(event, 'knife')">
             🔪
         </div>
@@ -398,35 +528,33 @@
         <div class="doner-machine-area" id="doner-machine">
             <div class="doner-spit"></div>
             <div class="doner-meat-large" id="doner-meat"></div>
-            <div class="doner-tray-bottom">
-                Et Stok: <span id="meat-count">0.0</span> Pors.
+            <div class="doner-tray-bottom" id="tray-area">
+                Et: <span id="meat-count">1.0</span> Pors.
             </div>
         </div>
     </div>
 
-    <!-- Tezgah & Sürükle Bırak Alanı -->
+    <!-- Tezgah Alanı -->
     <div class="counter-area">
-        <!-- Lavaş ve Doğranacak Malzemeler -->
         <div class="equipment-section">
-            <div class="item-box" ontouchstart="startCustomDrag(event, 'Lavaş', '🫓')" onmousedown="startCustomDrag(event, 'Lavaş', '🫓')">
-                <span style="font-size: 20px;">🫓</span>
-                Lavaş<br><small>(Sürükle)</small>
+            <div class="item-box" ontouchstart="startCustomDrag(event, 'Lavaş / Altlık', '🫓')" onmousedown="startCustomDrag(event, 'Lavaş / Altlık', '🫓')">
+                <span style="font-size: 18px;">🫓</span>
+                Lavaş / Hamur<br><small>(Dürüm/Kebap)</small>
             </div>
-            <div class="item-box" style="margin-top:4px; border-color:#e67e22;" ontouchstart="startCustomDrag(event, 'Bütün Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Bütün Soğan', '🧅')">
-                <span style="font-size: 18px;">🧅</span>
+            <div class="item-box" style="margin-top:3px; border-color:#27ae60;" ontouchstart="startCustomDrag(event, 'Tatlı Tepsisi', '🥧')" onmousedown="startCustomDrag(event, 'Tatlı Tepsisi', '🥧')">
+                <span style="font-size: 18px;">🥧</span>
+                Tatlı Tepsisi<br><small>(Baklava/Künefe)</small>
+            </div>
+            <div class="item-box" style="margin-top:3px; border-color:#e67e22;" ontouchstart="startCustomDrag(event, 'Bütün Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Bütün Soğan', '🧅')">
+                <span style="font-size: 16px;">🧅</span>
                 Soğan<br><small>(Tahtada Kes)</small>
-            </div>
-            <div class="item-box" style="margin-top:4px; border-color:#e74c3c;" ontouchstart="startCustomDrag(event, 'Bütün Domates', '🍅')" onmousedown="startCustomDrag(event, 'Bütün Domates', '🍅')">
-                <span style="font-size: 18px;">🍅</span>
-                Domates<br><small>(Tahtada Kes)</small>
             </div>
         </div>
 
-        <!-- Orta Tezgah (Kesme ve Hazırlık Tahtası) -->
         <div class="prep-table">
             <div class="board-zone" id="board-zone">
                 <div id="board-content" style="color: #888; font-size: 10px; font-weight: bold; text-align: center;">
-                    Lavaşı veya soğan/domatesi buraya bırakın. Bıçağı üstünde gezdirip doğrayın!
+                    Tabak/Lavaş/Tatlı Tepsisi koyun, malzemeleri dilediğiniz gibi ekleyin!
                 </div>
             </div>
 
@@ -436,32 +564,47 @@
                     <span class="pot-icon">🥩</span>
                     <span class="pot-title">Et</span>
                 </div>
-                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Marul', '🥗')" onmousedown="startCustomDrag(event, 'Marul', '🥗')">
-                    <span class="pot-icon">🥗</span>
-                    <span class="pot-title">Marul</span>
+                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Kıyma / Et', '🍖')" onmousedown="startCustomDrag(event, 'Kıyma / Et', '🍖')">
+                    <span class="pot-icon">🍖</span>
+                    <span class="pot-title">Kıyma</span>
                 </div>
                 <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Dilim Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Dilim Soğan', '🧅')">
                     <span class="pot-icon">🧅</span>
-                    <span class="pot-title">Soğan (Hazır)</span>
+                    <span class="pot-title">Soğan</span>
                 </div>
                 <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Dilim Domates', '🍅')" onmousedown="startCustomDrag(event, 'Dilim Domates', '🍅')">
                     <span class="pot-icon">🍅</span>
-                    <span class="pot-title">Dom. (Hazır)</span>
+                    <span class="pot-title">Domates</span>
+                </div>
+                <div class="ingredient-pot" style="border-color:#27ae60;" ontouchstart="startCustomDrag(event, 'Fıstık / Kadayıf', '🟢')" onmousedown="startCustomDrag(event, 'Fıstık / Kadayıf', '🟢')">
+                    <span class="pot-icon">🟢</span>
+                    <span class="pot-title">Fıstık</span>
+                </div>
+                <div class="ingredient-pot" style="border-color:#f39c12;" ontouchstart="startCustomDrag(event, 'Şerbet', '🍯')" onmousedown="startCustomDrag(event, 'Şerbet', '🍯')">
+                    <span class="pot-icon">🍯</span>
+                    <span class="pot-title">Şerbet</span>
                 </div>
                 <div class="ingredient-pot" style="border-color:#f1c40f;" ontouchstart="startToolDrag(event, 'sauce')" onmousedown="startToolDrag(event, 'sauce')">
                     <span class="pot-icon">🥄</span>
-                    <span class="pot-title">Sos Kepçesi</span>
+                    <span class="pot-title">Özel Sos</span>
                 </div>
-                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Ayran', '🥛')" onmousedown="startCustomDrag(event, 'Ayran', '🥛')">
+                <div class="ingredient-pot" style="border-color:#3498db;" ontouchstart="startCustomDrag(event, 'Ayran', '🥛')" onmousedown="startCustomDrag(event, 'Ayran', '🥛')">
                     <span class="pot-icon">🥛</span>
                     <span class="pot-title">Ayran</span>
+                </div>
+                <div class="ingredient-pot" style="border-color:#e74c3c;" ontouchstart="startCustomDrag(event, 'Kola', '🥤')" onmousedown="startCustomDrag(event, 'Kola', '🥤')">
+                    <span class="pot-icon">🥤</span>
+                    <span class="pot-title">Kola</span>
+                </div>
+                <div class="ingredient-pot" style="border-color:#e67e22;" ontouchstart="startCustomDrag(event, 'Paket Kağıdı', '📦')" onmousedown="startCustomDrag(event, 'Paket Kağıdı', '📦')">
+                    <span class="pot-icon">📦</span>
+                    <span class="pot-title">Kağıt</span>
                 </div>
             </div>
         </div>
 
-        <!-- Sağ Butonlar -->
         <div class="service-section">
-            <button class="btn-action-main btn-wrap" ontouchstart="startWrapDrag(event)" onmousedown="startWrapDrag(event)">🌯 PARMAKLA SAR</button>
+            <button class="btn-action-main btn-wrap" ontouchstart="startWrapDrag(event)" onmousedown="startWrapDrag(event)">🌯 SAR / HAZIRLA</button>
             <button class="btn-action-main btn-serve" onclick="serveCustomer()">🎁 MÜŞTERİYE VER</button>
             <button class="btn-action-main btn-clear" onclick="clearBoard()">🗑️ ÇÖP</button>
         </div>
@@ -470,40 +613,133 @@
 
 <script>
     let gameState = {
-        money: 150,
+        money: 250,
         day: 1,
-        meatStock: 0,
-        hasLavash: false,
-        isWrapped: false,
+        meatStock: 1.0,
+        hasBase: false,
+        isFinished: false,
+        isPackaged: false,
         boardItems: [],
-        currentOnBoard: null, // 'Bütün Soğan', 'Bütün Domates', veya 'Lavaş'
-        chopCount: 0,         // Doğrama ilerlemesi
-        currentOrder: null
+        currentOnBoard: null,
+        chopCount: 0,
+        currentOrder: null,
+        deliveredCount: 0,
+        gameMinutes: 480, 
+        unlockedRecipes: ['Klasik Döner Dürüm', 'Ayran']
     };
 
-    const CUSTOMERS = [
-        { avatar: "👳‍♂️", dialog: "Hakiki yaprak dönerden soğanlı, domatesli ve soslu bir dürüm rica ediyorum usta.", req: ["Döner Eti", "Dilim Soğan", "Dilim Domates", "Özel Sos"], price: 210 },
-        { avatar: "👨‍🦱", dialog: "Bana marullu, domatesli ve bol etli tam bir esnaf dürümü hazırla!", req: ["Döner Eti", "Marul", "Dilim Domates"], price: 200 },
-        { avatar: "👩", dialog: "Soğanlı, soslu hafif bir dürüm ve yanına ayran istiyorum.", req: ["Döner Eti", "Dilim Soğan", "Özel Sos", "Ayran"], price: 230 }
+    // HER GÜN SIRA İLE AÇILACAK TARİFLER LİSTESİ
+    const ALL_RECIPES = [
+        { name: "Klasik Döner Dürüm", req: ["Döner Eti", "Dilim Soğan", "Özel Sos"], price: 180, type: "food" },
+        { name: "Ayran", req: ["Ayran"], price: 30, type: "drink" },
+        { name: "Adana Kebap", req: ["Kıyma / Et", "Dilim Domates", "Özel Sos"], price: 220, type: "food" },
+        { name: "Kola", req: ["Kola"], price: 40, type: "drink" },
+        { name: "Lahmacun", req: ["Kıyma / Et", "Dilim Soğan", "Dilim Domates"], price: 150, type: "food" },
+        { name: "Fıstıklı Baklava", req: ["Fıstık / Kadayıf", "Şerbet"], price: 210, type: "dessert" },
+        { name: "Hatay Künefe", req: ["Fıstık / Kadayıf", "Şerbet"], price: 230, type: "dessert" },
+        { name: "İskender Kebap", req: ["Döner Eti", "Özel Sos"], price: 290, type: "food" }
     ];
 
     window.onload = function() {
         spawnCustomer();
         initGlobalInteractions();
+        setInterval(updateGameTime, 2000); // Süre 2 saniyede bire çıkarılarak yavaşlatıldı
+        renderRecipeList();
     };
 
-    function spawnCustomer() {
-        gameState.currentOrder = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
-        document.getElementById('cust-avatar').innerText = gameState.currentOrder.avatar;
-        document.getElementById('dialog-text').innerText = `"${gameState.currentOrder.dialog}"`;
+    function renderRecipeList() {
+        const container = document.getElementById('recipe-list-container');
+        container.innerHTML = '';
+        ALL_RECIPES.forEach(rec => {
+            let isUnlocked = gameState.unlockedRecipes.includes(rec.name);
+            let row = document.createElement('div');
+            row.className = 'recipe-row';
+            row.style.opacity = isUnlocked ? "1" : "0.4";
+            row.innerHTML = `<strong>${isUnlocked ? '✅' : '🔒'} ${rec.name}</strong> (${rec.price} TL)<br><small>Gerekli: ${rec.req.join(', ')}</small>`;
+            container.appendChild(row);
+        });
     }
 
-    function acceptOrder() { document.getElementById('dialog-text').innerText = '"Bekliyorum usta, ellerine sağlık!"'; }
-    function askClarity() { alert("İstenenler: " + gameState.currentOrder.req.join(', ')); }
+    function toggleRecipeModal() {
+        const modal = document.getElementById('recipe-modal');
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
 
-    // --- SÜRÜKLE BIRAK & KESME MOTORU ---
+    function spawnCustomer() {
+        let activeRecipes = ALL_RECIPES.filter(r => gameState.unlockedRecipes.includes(r.name));
+        let randomRecipe = activeRecipes[Math.floor(Math.random() * activeRecipes.length)];
+        let count = Math.random() > 0.6 ? 2 : 1; 
+        let isPaket = Math.random() > 0.5;
+
+        gameState.currentOrder = {
+            avatar: ["👳‍♂️", "🧔", "👩‍🦰", "👨‍🦱", "🧓", "👧"][Math.floor(Math.random() * 6)],
+            type: isPaket ? "paket" : "burada",
+            recipe: randomRecipe.name,
+            count: count,
+            dialog: isPaket 
+                ? `Usta acelem var, PAKET OLSUN ${count} TANE ${randomRecipe.name} yapar mısın?` 
+                : `Kolay gelsin usta, BURADA YEMEK İÇİN ${count} TANE ${randomRecipe.name} istiyorum.`
+        };
+
+        gameState.deliveredCount = 0;
+        document.getElementById('cust-avatar').innerText = gameState.currentOrder.avatar;
+        document.getElementById('dialog-text').innerText = `"${gameState.currentOrder.dialog}"`;
+        document.getElementById('order-badge-area').innerHTML = `<span class="order-progress-badge">Sipariş: 0 / ${gameState.currentOrder.count} Teslim Edildi</span>`;
+        document.getElementById('dialog-buttons').style.display = 'flex';
+    }
+
+    function acceptOrder() {
+        document.getElementById('dialog-text').innerText = `"Bekliyorum usta! (${gameState.currentOrder.count - gameState.deliveredCount} tane kaldı)"`;
+        document.getElementById('dialog-buttons').style.display = 'none';
+    }
+
+    function askClarity() { 
+        let recObj = ALL_RECIPES.find(r => r.name === gameState.currentOrder.recipe);
+        alert(`Sipariş: ${gameState.currentOrder.count} Adet ${gameState.currentOrder.recipe}\nTeslim Edilen: ${gameState.deliveredCount}\nMalzemeler: ${recObj.req.join(', ')}`); 
+    }
+
+    function updateGameTime() {
+        gameState.gameMinutes += 3; // Her adımda eklenen dakika 3'e düşürülerek tempo yumuşatıldı
+        let hours = Math.floor(gameState.gameMinutes / 60);
+        let mins = gameState.gameMinutes % 60;
+
+        if (hours >= 20) {
+            hours = 20; mins = 0;
+            document.getElementById('time-val').innerText = "20:00";
+            showEndDayModal();
+            return;
+        }
+
+        document.getElementById('time-val').innerText = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    }
+
+    function showEndDayModal() {
+        document.getElementById('end-day-modal').style.display = 'flex';
+        document.getElementById('day-summary-text').innerText = `${gameState.day}. Gün bitti! Kasada toplam ${gameState.money} TL var.`;
+        
+        let lockedRecipes = ALL_RECIPES.filter(r => !gameState.unlockedRecipes.includes(r.name));
+        let unlockBox = document.getElementById('new-recipe-unlocked-box');
+        
+        if(lockedRecipes.length > 0) {
+            let nextRecipe = lockedRecipes[0];
+            gameState.unlockedRecipes.push(nextRecipe.name);
+            unlockBox.innerHTML = `🎉 Tebrikler Usta! Yeni Gün ile Yeni Tarif Açıldı: <strong>${nextRecipe.name}</strong> Artık müşteriler bunu da isteyecek!`;
+        } else {
+            unlockBox.innerHTML = `🌟 Tüm efsane tariflerin kilidi açık! Dükkan tam kapasite çalışıyor.`;
+        }
+        renderRecipeList();
+    }
+
+    function startNextDay() {
+        gameState.day++;
+        gameState.gameMinutes = 480; 
+        document.getElementById('day-val').innerText = gameState.day;
+        document.getElementById('end-day-modal').style.display = 'none';
+        spawnCustomer();
+    }
+
     let activeDragData = null;
-    let activeToolType = null; // 'knife', 'sauce', 'wrap'
+    let activeToolType = null; 
     const ghost = document.getElementById('drag-ghost');
     const activeTool = document.getElementById('active-tool');
 
@@ -528,8 +764,8 @@
     let wrapStartY = 0;
     function startWrapDrag(e) {
         e.preventDefault();
-        if(!gameState.hasLavash || gameState.boardItems.length === 0) {
-            alert("Sarmak için önce lavaş ve malzeme koymalısın!");
+        if(!gameState.hasBase || gameState.boardItems.length === 0) {
+            alert("Önce tezgah/tabak koyup malzemeleri eklemelisin!");
             return;
         }
         activeToolType = 'wrap';
@@ -542,7 +778,6 @@
     function initGlobalInteractions() {
         window.addEventListener('mousemove', handleGlobalMove);
         window.addEventListener('touchmove', handleGlobalMove, {passive: false});
-
         window.addEventListener('mouseup', handleGlobalEnd);
         window.addEventListener('touchend', handleGlobalEnd);
     }
@@ -561,27 +796,24 @@
             const machine = document.getElementById('doner-machine').getBoundingClientRect();
             const boardRect = document.getElementById('board-zone').getBoundingClientRect();
 
-            // 1. BIÇAK KONTROLÜ
             if (activeToolType === 'knife') {
-                // A) Döner ocağında et kesme
                 if (clientX >= machine.left && clientX <= machine.right && clientY >= machine.top && clientY <= machine.bottom) {
                     let deltaY = Math.abs(clientY - lastMoveY);
-                    if (deltaY > 12) {
-                        gameState.meatStock += 0.1;
+                    if (deltaY > 22) { 
+                        gameState.meatStock += 0.03; 
                         document.getElementById('meat-count').innerText = gameState.meatStock.toFixed(1);
+                        createFallingMeatEffect(clientX, clientY);
                     }
-                }
-                // B) Kesme tahtasında soğan / domates doğrama
-                else if (clientX >= boardRect.left && clientX <= boardRect.right && clientY >= boardRect.top && clientY <= boardRect.bottom) {
+                } else if (clientX >= boardRect.left && clientX <= boardRect.right && clientY >= boardRect.top && clientY <= boardRect.bottom) {
                     if (gameState.currentOnBoard === 'Bütün Soğan' || gameState.currentOnBoard === 'Bütün Domates') {
                         let deltaY = Math.abs(clientY - lastMoveY);
-                        if (deltaY > 10) {
+                        if (deltaY > 12) {
                             gameState.chopCount++;
                             renderBoard();
-                            if (gameState.chopCount >= 8) { // 8 kesme hareketinde doğranır
+                            if (gameState.chopCount >= 10) { 
                                 let slicedName = gameState.currentOnBoard === 'Bütün Soğan' ? 'Dilim Soğan' : 'Dilim Domates';
                                 let slicedIcon = gameState.currentOnBoard === 'Bütün Soğan' ? '🧅' : '🍅';
-                                alert(`${gameState.currentOnBoard} başarıyla doğrandı!`);
+                                alert(`${gameState.currentOnBoard} doğrandı!`);
                                 gameState.currentOnBoard = null;
                                 gameState.chopCount = 0;
                                 gameState.boardItems.push({ name: slicedName, icon: slicedIcon });
@@ -594,6 +826,16 @@
         }
         lastMoveY = clientY;
         if(e.cancelable) e.preventDefault();
+    }
+
+    function createFallingMeatEffect(x, y) {
+        const piece = document.createElement('div');
+        piece.className = 'falling-meat-piece';
+        piece.innerText = '🥩';
+        piece.style.left = `${x}px`;
+        piece.style.top = `${y}px`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 400);
     }
 
     function moveElement(e, el) {
@@ -616,7 +858,7 @@
         if (activeDragData && isInBoard) {
             processDropItem(activeDragData);
         } else if (activeToolType === 'sauce' && isInBoard) {
-            if(gameState.hasLavash && !gameState.isWrapped) {
+            if(gameState.hasBase && !gameState.isFinished) {
                 if(!gameState.boardItems.some(i => i.name === 'Özel Sos')) {
                     gameState.boardItems.push({ name: 'Özel Sos', icon: '🥫' });
                     renderBoard();
@@ -625,9 +867,11 @@
         } else if (activeToolType === 'wrap') {
             let wrapEndY = clientY;
             if (wrapStartY - wrapEndY > 40) {
-                if(gameState.hasLavash && gameState.boardItems.length > 0) {
-                    gameState.isWrapped = true;
-                    renderBoard();
+                if(gameState.hasBase && gameState.boardItems.length > 0) {
+                    if(!gameState.isFinished) {
+                        gameState.isFinished = true;
+                        renderBoard();
+                    }
                 }
             }
         }
@@ -637,19 +881,27 @@
     }
 
     function processDropItem(data) {
-        if(data.name === 'Lavaş') {
-            gameState.hasLavash = true;
-            gameState.isWrapped = false;
+        if(data.name === 'Lavaş / Altlık' || data.name === 'Tatlı Tepsisi') {
+            gameState.hasBase = true;
+            gameState.isFinished = false;
+            gameState.isPackaged = false;
             gameState.boardItems = [];
             gameState.currentOnBoard = null;
             renderBoard();
             return;
         }
 
-        // Bütün soğan veya domatesi kesme tahtasına koyma
+        if(data.name === 'Ayran' || data.name === 'Kola') {
+            gameState.hasBase = true;
+            gameState.isFinished = true;
+            gameState.boardItems = [data];
+            renderBoard();
+            return;
+        }
+
         if(data.name === 'Bütün Soğan' || data.name === 'Bütün Domates') {
-            if(gameState.hasLavash) {
-                alert("Lavaşın üzerine bütün sebze konulmaz! Önce tahtayı temizleyin.");
+            if(gameState.hasBase) {
+                alert("Tabak/Lavaş üzerine bütün sebze konulmaz!");
                 return;
             }
             gameState.currentOnBoard = data.name;
@@ -658,18 +910,24 @@
             return;
         }
 
-        if(!gameState.hasLavash) {
-            alert("Önce tezgaha lavaş koymalısın!");
+        if(data.name === 'Paket Kağıdı') {
+            if(!gameState.isFinished) {
+                alert("Önce siparişi hazırlayıp sar/hazırla butonuna basmalısın!");
+                return;
+            }
+            gameState.isPackaged = true;
+            renderBoard();
             return;
         }
-        if(gameState.isWrapped) {
-            alert("Dürüm zaten sarıldı!");
+
+        if(!gameState.hasBase) {
+            alert("Önce tezgaha lavaş / tabak / tatlı tepsisi koymalısın!");
             return;
         }
 
         if(data.name === 'Döner Eti') {
             if(gameState.meatStock < 1) {
-                alert("Yeterli kesilmiş etin yok! Sol alttaki bıçağı tutup dönerde yukarı-aşağı hareket ettirerek et kesmelisin.");
+                alert("Yeterli kesilmiş etin yok! Sol alttaki bıçağı döner ocağında uzun süre yukarı-aşağı kaydırarak et biriktirmelisin.");
                 return;
             }
             gameState.meatStock -= 1;
@@ -683,14 +941,13 @@
     function renderBoard() {
         const board = document.getElementById('board-content');
         
-        // Eğer tahtada kesilmeyi bekleyen bütün sebze varsa
         if(gameState.currentOnBoard) {
             let icon = gameState.currentOnBoard === 'Bütün Soğan' ? '🧅' : '🍅';
-            let progressPercent = (gameState.chopCount / 8) * 100;
+            let progressPercent = (gameState.chopCount / 10) * 100;
             board.innerHTML = `
                 <div style="text-align:center;">
                     <div style="font-size:32px;">${icon}</div>
-                    <div style="font-size:9px; color:#f1c40f; font-weight:bold; margin-top:2px;">Bıçakla Yukarı-Aşağı Doğra! (${gameState.chopCount}/8)</div>
+                    <div style="font-size:9px; color:#f1c40f; font-weight:bold; margin-top:2px;">Bıçakla Yukarı-Aşağı Doğra! (${gameState.chopCount}/10)</div>
                     <div style="width:100px; height:6px; background:#444; border-radius:3px; margin:4px auto; overflow:hidden;">
                         <div style="width:${progressPercent}%; height:100%; background:#27ae60;"></div>
                     </div>
@@ -698,43 +955,63 @@
             return;
         }
 
-        if(!gameState.hasLavash) {
-            board.innerHTML = "Lavaşı veya soğan/domatesi buraya bırakın. Bıçağı üstünde gezdirip doğrayın!";
+        if(!gameState.hasBase) {
+            board.innerHTML = "Tabak/lavaş/tatlı tepsisi koyun veya içecek seçin!";
             return;
         }
 
-        if(gameState.isWrapped) {
-            board.innerHTML = `<div class="rolled-durum">🌯 Hakiki Sarılmış Dürüm</div>`;
+        if(gameState.isPackaged) {
+            board.innerHTML = `<div class="finished-dish" style="background:#d35400;">📦 Paket Servis Hazır!</div>`;
+        } else if(gameState.isFinished) {
+            board.innerHTML = `<div class="finished-dish">🍽️ Hazır (Paketse kağıt sürükleyin)</div>`;
         } else {
-            let itemsHTML = gameState.boardItems.map(i => `<span style="font-size:20px; margin: 0 2px;" title="${i.name}">${i.icon}</span>`).join('');
-            board.innerHTML = `<div class="lavash-on-board">${itemsHTML || '<span style="font-size:10px; color:#a6844d;">(Malzemeleri bırakın, kepçeyle sos dökün)</span>'}</div>`;
+            let itemsHTML = gameState.boardItems.map(i => `<span style="font-size:18px; margin: 0 2px;" title="${i.name}">${i.icon}</span>`).join('');
+            board.innerHTML = `<div class="plate-on-board">${itemsHTML || '<span style="font-size:10px; color:#8c532b;">(Malzemeleri dizin)</span>'}</div>`;
         }
     }
 
     function serveCustomer() {
-        if(!gameState.isWrapped) {
-            alert("Müşteriye vermeden önce parmağınızı aşağıdan yukarıya sürükleyerek dürümü sarmanız gerekiyor!");
+        if(!gameState.isFinished) {
+            alert("Müşteriye vermeden önce hazırlamayı bitirmelisin!");
             return;
         }
 
-        const req = gameState.currentOrder.req;
+        const isPaketWanted = gameState.currentOrder.type === 'paket';
+
+        if(isPaketWanted && !gameState.isPackaged) {
+            alert("Müşteri bunu 'PAKET' istiyor! Üzerine Paket Kağıdı sürüklemelisin.");
+            return;
+        }
+
+        const targetRecipe = ALL_RECIPES.find(r => r.name === gameState.currentOrder.recipe);
         const currentNames = gameState.boardItems.map(i => i.name);
-        const matches = req.every(r => currentNames.includes(r));
+        
+        let matches = targetRecipe.req.every(reqItem => currentNames.includes(reqItem));
 
         if(matches) {
-            gameState.money += gameState.currentOrder.price;
+            gameState.deliveredCount++;
+            gameState.money += targetRecipe.price;
             document.getElementById('money-val').innerText = gameState.money;
-            alert(`Helal olsun Usta! +${gameState.currentOrder.price} TL Kazandın.`);
-            clearBoard();
-            spawnCustomer();
+
+            if(gameState.deliveredCount < gameState.currentOrder.count) {
+                alert(`Harika! Porsiyonun 1 tanesini verdin (+${targetRecipe.price} TL). Müşteri diğer porsiyonu bekliyor! (${gameState.deliveredCount} / ${gameState.currentOrder.count})`);
+                document.getElementById('dialog-text').innerText = `"Teşekkürler usta! Diğer ${gameState.currentOrder.count - gameState.deliveredCount} taneyi de bekliyorum."`;
+                document.getElementById('order-badge-area').innerHTML = `<span class="order-progress-badge">Sipariş: ${gameState.deliveredCount} / ${gameState.currentOrder.count} Teslim Edildi</span>`;
+                clearBoard();
+            } else {
+                alert(`Helal olsun Usta! ${targetRecipe.name} siparişi tamamlandı. Müşteri memnun ayrıldı (+${targetRecipe.price} TL)`);
+                clearBoard();
+                spawnCustomer();
+            }
         } else {
-            alert("Müşteri bu malzemeleri istememişti, sipariş yanlış!");
+            alert(`Sipariş yanlış! İstenen: '${targetRecipe.name}' (${targetRecipe.req.join(', ')})`);
         }
     }
 
     function clearBoard() {
-        gameState.hasLavash = false;
-        gameState.isWrapped = false;
+        gameState.hasBase = false;
+        gameState.isFinished = false;
+        gameState.isPackaged = false;
         gameState.boardItems = [];
         gameState.currentOnBoard = null;
         gameState.chopCount = 0;
