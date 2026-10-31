@@ -3,1023 +3,734 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Efsane Dönerci & Kebap Sarayı: Hakiki Usta</title>
+    <title>3D Gece Tostçusu - Görüş Açısı Düzeltilmiş</title>
+    <!-- Tailwind CSS & FontAwesome Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js & PeerJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;900&display=swap');
+        * { user-select: none; -webkit-user-select: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #04060a; color: #f8fafc; }
+        #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .interactive { pointer-events: auto; }
+        .glass-panel { background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.5); border-radius: 4px; }
+        @keyframes sizzleGlow {
+            0% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
         }
-
-        body {
-            background-color: #1a0f0a;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* OYUN KONTEYNERİ (Otomatik Esnek) */
-        #game-container {
-            width: 100%;
-            height: 100%;
-            max-width: 900px;
-            max-height: 600px;
-            background: #2b1810;
-            border: 4px solid #5c3a21;
-            border-radius: 10px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-        }
-
-        /* Top Bar */
-        .top-bar {
-            height: 40px;
-            background: #422517;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 8px;
-            font-weight: bold;
-            font-size: 11px;
-            border-bottom: 2px solid #6e4223;
-            flex-shrink: 0;
-            z-index: 10;
-        }
-
-        .stat-badge {
-            background: #1c0e08;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid #8c532b;
-            color: #f1c40f;
-        }
-
-        .btn-top-menu {
-            background: #e67e22;
-            border: 1px solid #d35400;
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        /* Dükkan Görünümü */
-        .shop-view {
-            height: 42%;
-            background: linear-gradient(to bottom, #4a2f1b, #2c180e);
-            position: relative;
-            display: flex;
-            align-items: flex-end;
-            border-bottom: 3px solid #5c3a21;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .restaurant-interior {
-            position: absolute;
-            top: 8px;
-            left: 10px;
-            width: 350px;
-            height: 100px;
-            display: flex;
-            gap: 15px;
-            opacity: 0.75;
-            pointer-events: none;
-        }
-
-        .table-group {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .chair {
-            width: 14px;
-            height: 22px;
-            background: #3b220c;
-            border: 1px solid #5c3a21;
-            border-radius: 3px;
-        }
-
-        .table {
-            width: 40px;
-            height: 28px;
-            background: #6e4223;
-            border: 2px solid #8c532b;
-            border-radius: 3px;
-        }
-
-        /* Döner Ocağı */
-        .doner-machine-area {
-            position: absolute;
-            right: 12px;
-            bottom: 8px;
-            width: 80px;
-            height: 145px;
-            background: #111;
-            border: 2px solid #555;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .doner-spit {
-            width: 4px;
-            height: 100%;
-            background: #aaa;
-            position: absolute;
-        }
-
-        .doner-meat-large {
-            width: 50px;
-            height: 90px;
-            background: linear-gradient(to right, #803010, #b04818, #602008);
-            border-radius: 25px / 50px;
-            position: absolute;
-            box-shadow: inset -3px 0 6px rgba(0,0,0,0.6);
-        }
-
-        .floating-knife-tool {
-            position: absolute;
-            left: 10px;
-            bottom: 12px;
-            width: 42px;
-            height: 42px;
-            background: #c0392b;
-            border: 2px solid #e74c3c;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            cursor: grab;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-            z-index: 50;
-        }
-
-        .doner-tray-bottom {
-            position: absolute;
-            bottom: 3px;
-            width: 72px;
-            height: 20px;
-            background: #442817;
-            border: 1px solid #6e4223;
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8px;
-            font-weight: bold;
-            color: #f1c40f;
-        }
-
-        .falling-meat-piece {
-            position: absolute;
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 100;
-            animation: fallToTray 0.4s ease-out forwards;
-        }
-
-        @keyframes fallToTray {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(35px) scale(0.8); opacity: 0.9; }
-        }
-
-        /* Müşteri & Baloncuk */
-        .customer-container {
-            position: absolute;
-            left: 8px;
-            bottom: 0;
-            display: flex;
-            align-items: flex-end;
-            gap: 6px;
-            z-index: 5;
-        }
-
-        .customer-avatar {
-            font-size: 50px;
-            line-height: 1;
-        }
-
-        .speech-bubble {
-            background: #ffffff;
-            border: 2px solid #f39c12;
-            border-radius: 10px;
-            padding: 5px 8px;
-            max-width: 200px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            position: relative;
-            margin-bottom: 25px;
-            color: #1a0f0a;
-        }
-
-        .speech-bubble::after {
-            content: '';
-            position: absolute;
-            left: -8px;
-            bottom: 10px;
-            border-width: 5px 8px 5px 0;
-            border-style: solid;
-            border-color: transparent #f39c12 transparent transparent;
-        }
-
-        .dialog-text {
-            font-size: 9px;
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .order-progress-badge {
-            display: inline-block;
-            background: #27ae60;
-            color: white;
-            font-size: 8px;
-            font-weight: bold;
-            padding: 1px 4px;
-            border-radius: 3px;
-            margin-top: 2px;
-        }
-
-        .dialog-btns {
-            display: flex;
-            gap: 3px;
-        }
-
-        .btn-dialog {
-            background: #e67e22;
-            border: 1px solid #d35400;
-            color: white;
-            padding: 1px 4px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 8px;
-        }
-
-        /* Tezgah Alanı */
-        .counter-area {
-            flex: 1;
-            background: #1e120b;
-            border-top: 3px solid #5c3a21;
-            padding: 4px;
-            display: flex;
-            gap: 4px;
-            overflow: hidden;
-        }
-
-        .equipment-section {
-            width: 17%;
-            background: #2a190e;
-            border: 1px solid #4a2f19;
-            border-radius: 6px;
-            padding: 2px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            align-items: center;
-        }
-
-        .item-box {
-            background: #1c0f08;
-            border: 1px dashed #f39c12;
-            border-radius: 4px;
-            width: 100%;
-            padding: 3px 1px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: grab;
-            font-size: 7px;
-            font-weight: bold;
-            color: white;
-            text-align: center;
-        }
-
-        /* Hazırlık Masası */
-        .prep-table {
-            width: 61%;
-            background: #2a190e;
-            border: 1px solid #4a2f19;
-            border-radius: 6px;
-            padding: 3px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .board-zone {
-            width: 100%;
-            height: 95px;
-            background: #1c0f08;
-            border: 2px dashed #6e4223;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .plate-on-board {
-            width: 170px;
-            height: 55px;
-            background: radial-gradient(circle, #fdfbf7, #e3dec9);
-            border: 2px solid #b08968;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 6px;
-            gap: 2px;
-            position: relative;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-        }
-
-        .finished-dish {
-            width: 160px;
-            height: 40px;
-            background: linear-gradient(to bottom, #d4a373, #bc6c25);
-            border: 2px solid #fff;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #fff;
-            font-size: 9px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .ingredients-row {
-            display: flex;
-            gap: 2px;
-            justify-content: space-between;
-            overflow-x: auto;
-        }
-
-        .ingredient-pot {
-            min-width: 30px;
-            flex: 1;
-            height: 42px;
-            background: #1c0f08;
-            border: 1px solid #6e4223;
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: grab;
-        }
-
-        .pot-icon { font-size: 12px; }
-        .pot-title { font-size: 5px; font-weight: bold; color: #ddd; text-align: center; }
-
-        /* Sağ Servis Bölümü */
-        .service-section {
-            width: 22%;
-            background: #2a190e;
-            border: 1px solid #4a2f19;
-            border-radius: 6px;
-            padding: 3px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .btn-action-main {
-            width: 100%;
-            padding: 5px 1px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 9px;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 2px 0 rgba(0,0,0,0.5);
-        }
-
-        .btn-serve { background: #27ae60; }
-        .btn-wrap { background: #e67e22; }
-        .btn-clear { background: #c0392b; }
-
-        /* MODALLAR */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 300;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-card {
-            background: #2c180e;
-            border: 2px solid #8c532b;
-            border-radius: 10px;
-            width: 85%; max-width: 360px;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 10px; text-align: center;
-            color: white;
-        }
-
-        .recipe-row {
-            background: #1c0f08;
-            border: 1px solid #5c3a21;
-            padding: 4px 6px;
-            border-radius: 4px;
-            margin-bottom: 4px;
-            text-align: left;
-            font-size: 9px;
-        }
-
-        #drag-ghost {
-            position: fixed;
-            pointer-events: none;
-            font-size: 26px;
-            z-index: 1000;
-            display: none;
-            transform: translate(-50%, -50%);
-        }
-
-        #active-tool {
-            position: fixed;
-            pointer-events: none;
-            font-size: 30px;
-            z-index: 1000;
-            display: none;
-            transform: translate(-50%, -50%);
-        }
+        .grill-active { animation: sizzleGlow 1.5s infinite ease-in-out; }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100">
 
-<div id="drag-ghost"></div>
-<div id="active-tool">🔪</div>
-
-<!-- TARİF DEFTERİ MODALI -->
-<div class="modal-overlay" id="recipe-modal">
-    <div class="modal-card">
-        <h3 style="color: #f39c12; margin-bottom: 6px; font-size: 13px;">📖 Usta Tarif Defteri</h3>
-        <div id="recipe-list-container" style="margin-bottom: 8px;"></div>
-        <button class="btn-action-main btn-wrap" style="width: 100px;" onclick="toggleRecipeModal()">Kapat</button>
-    </div>
-</div>
-
-<!-- GÜN SONU / MARKET MODALI -->
-<div class="modal-overlay" id="end-day-modal">
-    <div class="modal-card">
-        <h3 style="color: #f39c12; margin-bottom: 6px; font-size: 13px;">🌙 Gün Bitti (Saat 20:00)</h3>
-        <p style="font-size: 9px; color: #ddd; margin-bottom: 6px;" id="day-summary-text">Harika iş çıkardın usta!</p>
-        <div id="new-recipe-unlocked-box" style="background:#1c0f08; border:1px solid #f39c12; padding:5px; border-radius:4px; margin-bottom:6px; font-size:9px; color:#f1c40f;"></div>
-        <button class="btn-action-main btn-serve" onclick="startNextDay()">Yeni Güne Başla ☀️</button>
-    </div>
-</div>
-
-<div id="game-container">
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div>📅 Gün: <span id="day-val">1</span></div>
-        <div class="stat-badge">💰 Kasa: <span id="money-val">250</span> TL</div>
-        <button class="btn-top-menu" onclick="toggleRecipeModal()">📖 Tarifler</button>
-        <div>⏰ Saat: <span id="time-val">08:00</span></div>
-    </div>
-
-    <!-- Dükkan Görünümü -->
-    <div class="shop-view">
-        <div class="restaurant-interior">
-            <div class="table-group"><div class="chair"></div><div class="table"></div><div class="chair"></div></div>
-            <div class="table-group"><div class="chair"></div><div class="table"></div><div class="chair"></div></div>
-            <div class="table-group"><div class="chair"></div><div class="table"></div><div class="chair"></div></div>
-        </div>
-
-        <div class="customer-container">
-            <div class="customer-avatar" id="cust-avatar">👳‍♂️</div>
-            <div class="speech-bubble">
-                <div class="dialog-text" id="dialog-text">"Usta kolay gelsin, siparişim olacak."</div>
-                <div id="order-badge-area"></div>
-                <div class="dialog-btns" id="dialog-buttons">
-                    <button class="btn-dialog" onclick="acceptOrder()">Tamam</button>
-                    <button class="btn-dialog" onclick="askClarity()">Ne İstiyor?</button>
-                </div>
+    <!-- CİHAZ SEÇİMİ -->
+    <div id="device-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 text-center border border-amber-500/30 shadow-2xl">
+            <div class="text-4xl mb-3">🚐🔥</div>
+            <h2 class="text-xl font-black text-white mb-1">Gece Tostçusu</h2>
+            <p class="text-xs text-slate-400 mb-6">Cihazını seçerek dükkanı açabilirsin:</p>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button id="select-phone-btn" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500 p-4 rounded-2xl transition flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen text-2xl text-amber-400"></i>
+                    <span class="font-bold text-xs">Telefon / Ekran</span>
+                </button>
+                <button id="select-tablet-btn" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500 p-4 rounded-2xl transition flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-tablet-screen-button text-2xl text-amber-400"></i>
+                    <span class="font-bold text-xs">Tablet / Bilgisayar</span>
+                </button>
             </div>
-        </div>
-
-        <!-- Bıçak Aracı -->
-        <div class="floating-knife-tool" id="knife-tool" ontouchstart="startToolDrag(event, 'knife')" onmousedown="startToolDrag(event, 'knife')">
-            🔪
-        </div>
-
-        <div class="doner-machine-area" id="doner-machine">
-            <div class="doner-spit"></div>
-            <div class="doner-meat-large" id="doner-meat"></div>
-            <div class="doner-tray-bottom" id="tray-area">
-                Et: <span id="meat-count">1.0</span> Pors.
-            </div>
+            <div class="text-[10px] text-slate-500">Gece Vardiyası Ekibi © 2026</div>
         </div>
     </div>
 
-    <!-- Tezgah Alanı -->
-    <div class="counter-area">
-        <div class="equipment-section">
-            <div class="item-box" ontouchstart="startCustomDrag(event, 'Lavaş / Altlık', '🫓')" onmousedown="startCustomDrag(event, 'Lavaş / Altlık', '🫓')">
-                <span style="font-size: 14px;">🫓</span>
-                Lavaş
+    <!-- 3D CANVAS -->
+    <div id="canvas-container"></div>
+
+    <!-- ANA OYUN ARAYÜZÜ -->
+    <div id="game-hud" class="ui-layer flex flex-col justify-between p-3 md:p-4 hidden">
+        
+        <!-- ÜST BAR -->
+        <div class="flex flex-wrap justify-between items-center gap-3 w-full max-w-7xl mx-auto">
+            <div class="glass-panel interactive px-3 py-2 rounded-2xl flex items-center gap-3 border border-amber-500/20 shadow-xl">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-black text-sm">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <div class="text-[9px] uppercase text-slate-400 font-bold">Kasa</div>
+                        <div id="money-display" class="text-lg font-black text-amber-400 leading-none">₺750</div>
+                    </div>
+                </div>
+                <div class="h-6 w-[1px] bg-slate-800"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-black text-sm">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="text-[9px] uppercase text-slate-400 font-bold">Prestij</div>
+                        <div id="rep-display" class="text-lg font-black text-emerald-400 leading-none">%100</div>
+                    </div>
+                </div>
             </div>
-            <div class="item-box" style="margin-top:2px; border-color:#27ae60;" ontouchstart="startCustomDrag(event, 'Tatlı Tepsisi', '🥧')" onmousedown="startCustomDrag(event, 'Tatlı Tepsisi', '🥧')">
-                <span style="font-size: 14px;">🥧</span>
-                Tatlı
-            </div>
-            <div class="item-box" style="margin-top:2px; border-color:#e67e22;" ontouchstart="startCustomDrag(event, 'Bütün Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Bütün Soğan', '🧅')">
-                <span style="font-size: 12px;">🧅</span>
-                Soğan (Kes)
+
+            <!-- AKTİVİTE BUTONLARI -->
+            <div class="glass-panel interactive px-3 py-2 rounded-2xl flex items-center gap-2 border border-indigo-500/20 shadow-xl">
+                <button id="open-market-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl transition flex items-center gap-1">
+                    <i class="fa-solid fa-cart-shopping"></i> Toptancıya Git
+                </button>
+                <button id="open-kahve-btn" class="bg-amber-700 hover:bg-amber-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl transition flex items-center gap-1">
+                    <i class="fa-solid fa-mug-hot"></i> Kahvehaneye Git
+                </button>
+                <button id="open-tablet-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl transition flex items-center gap-1">
+                    <i class="fa-solid fa-tablet-screen-button"></i> Tablet Sipariş
+                </button>
+                <button id="end-day-fire-btn" class="bg-red-600/80 hover:bg-red-500 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl transition shadow flex items-center gap-1">
+                    <i class="fa-solid fa-campground"></i> Günü Bitir
+                </button>
             </div>
         </div>
 
-        <div class="prep-table">
-            <div class="board-zone" id="board-zone">
-                <div id="board-content" style="color: #888; font-size: 8px; font-weight: bold; text-align: center;">
-                    Tabak/Lavaş koyun, malzemeleri ekleyin!
-                </div>
-            </div>
+        <!-- ORTA ALAN: SOL PANEL -->
+        <div class="flex justify-start items-start w-full my-auto pointer-events-none py-2">
+            <div id="left-sidebar" class="interactive glass-panel w-72 md:w-88 rounded-3xl p-3 border border-slate-800 shadow-2xl flex flex-col gap-2.5 max-h-[72vh] overflow-y-auto custom-scrollbar">
+                
+                <!-- MÜŞTERİ KARTI -->
+                <div class="bg-slate-900/90 rounded-2xl p-2.5 border border-slate-800 flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div id="cust-avatar-icon" class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-slate-950 flex items-center justify-center font-black text-base shadow-md">
+                                👨‍✈️
+                            </div>
+                            <div>
+                                <h4 id="cust-name-text" class="text-xs font-black text-slate-100 leading-tight">Taksici Hakan</h4>
+                                <span id="cust-title-text" class="text-[9px] text-amber-400 font-bold">Gece Vardiyası</span>
+                            </div>
+                        </div>
+                        <div class="w-14 flex flex-col items-end">
+                            <div class="text-[8px] font-bold text-slate-400 mb-0.5">SABIR</div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
+                                <div id="patience-bar" class="bg-gradient-to-r from-emerald-500 to-amber-500 h-full w-full transition-all duration-300"></div>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Malzeme Kutuları -->
-            <div class="ingredients-row">
-                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Döner Eti', '🥩')" onmousedown="startCustomDrag(event, 'Döner Eti', '🥩')">
-                    <span class="pot-icon">🥩</span>
-                    <span class="pot-title">Et</span>
+                    <div class="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-[11px] italic text-slate-300 flex items-start gap-1.5">
+                        <i class="fa-solid fa-quote-left text-amber-500/40 text-xs mt-0.5"></i>
+                        <span id="cust-dialogue-text">Usta bana bol kaşarlı sıcak bir tost, demli çay ve künefe çek!</span>
+                    </div>
+
+                    <div>
+                        <div class="text-[9px] uppercase font-extrabold text-slate-400 tracking-wider mb-1 flex items-center justify-between">
+                            <span>Sipariş:</span>
+                            <span id="order-status-badge" class="text-amber-400 text-[8px] bg-amber-500/10 px-1.5 py-0.5 rounded-md">Hazırlanıyor</span>
+                        </div>
+                        <div id="order-items-container" class="flex flex-wrap gap-1"></div>
+                    </div>
+
+                    <button id="serve-toast-btn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-slate-950 font-black text-[11px] py-2 rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 uppercase">
+                        <i class="fa-solid fa-bell"></i> Siparişi Sun & Para Al
+                    </button>
                 </div>
-                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Kıyma / Et', '🍖')" onmousedown="startCustomDrag(event, 'Kıyma / Et', '🍖')">
-                    <span class="pot-icon">🍖</span>
-                    <span class="pot-title">Kıyma</span>
-                </div>
-                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Dilim Soğan', '🧅')" onmousedown="startCustomDrag(event, 'Dilim Soğan', '🧅')">
-                    <span class="pot-icon">🧅</span>
-                    <span class="pot-title">Soğan</span>
-                </div>
-                <div class="ingredient-pot" ontouchstart="startCustomDrag(event, 'Dilim Domates', '🍅')" onmousedown="startCustomDrag(event, 'Dilim Domates', '🍅')">
-                    <span class="pot-icon">🍅</span>
-                    <span class="pot-title">Domates</span>
-                </div>
-                <div class="ingredient-pot" style="border-color:#27ae60;" ontouchstart="startCustomDrag(event, 'Fıstık / Kadayıf', '🟢')" onmousedown="startCustomDrag(event, 'Fıstık / Kadayıf', '🟢')">
-                    <span class="pot-icon">🟢</span>
-                    <span class="pot-title">Fıstık</span>
-                </div>
-                <div class="ingredient-pot" style="border-color:#f39c12;" ontouchstart="startCustomDrag(event, 'Şerbet', '🍯')" onmousedown="startCustomDrag(event, 'Şerbet', '🍯')">
-                    <span class="pot-icon">🍯</span>
-                    <span class="pot-title">Şerbet</span>
-                </div>
-                <div class="ingredient-pot" style="border-color:#f1c40f;" ontouchstart="startToolDrag(event, 'sauce')" onmousedown="startToolDrag(event, 'sauce')">
-                    <span class="pot-icon">🥄</span>
-                    <span class="pot-title">Sos</span>
-                </div>
-                <div class="ingredient-pot" style="border-color:#3498db;" ontouchstart="startCustomDrag(event, 'Ayran', '🥛')" onmousedown="startCustomDrag(event, 'Ayran', '🥛')">
-                    <span class="pot-icon">🥛</span>
-                    <span class="pot-title">Ayran</span>
-                </div>
-                <div class="ingredient-pot" style="border-color:#e74c3c;" ontouchstart="startCustomDrag(event, 'Kola', '🥤')" onmousedown="startCustomDrag(event, 'Kola', '🥤')">
-                    <span class="pot-icon">🥤</span>
-                    <span class="pot-title">Kola</span>
-                </div>
-                <div class="ingredient-pot" style="border-color:#e67e22;" ontouchstart="startCustomDrag(event, 'Paket Kağıdı', '📦')" onmousedown="startCustomDrag(event, 'Paket Kağıdı', '📦')">
-                    <span class="pot-icon">📦</span>
-                    <span class="pot-title">Kağıt</span>
+
+                <!-- STOKLAR, İÇECEKLER VE TATLILAR -->
+                <div class="bg-slate-900/90 rounded-2xl p-2.5 border border-slate-800">
+                    <div class="text-[11px] font-black text-amber-400 uppercase mb-1.5 flex items-center justify-between">
+                        <span><i class="fa-solid fa-boxes-stacked mr-1"></i> Malzeme & Tatlı Stokları</span>
+                    </div>
+
+                    <div id="stocks-panel-grid" class="grid grid-cols-4 gap-1 text-center text-xs"></div>
+
+                    <!-- İÇECEKLER -->
+                    <div class="grid grid-cols-3 gap-1.5 mt-2">
+                        <button id="fill-tea-btn" class="bg-amber-900/40 border border-amber-600/40 text-amber-300 font-bold text-[10px] py-1.5 rounded-xl transition flex flex-col items-center">
+                            <span>🍵 Çay (₺35)</span>
+                            <span id="tea-count" class="text-[9px] text-amber-400 font-black">0</span>
+                        </button>
+                        <button id="fill-ayran-btn" class="bg-cyan-950/40 border border-cyan-500/40 text-cyan-300 font-bold text-[10px] py-1.5 rounded-xl transition flex flex-col items-center">
+                            <span>🥛 Ayran (₺45)</span>
+                            <span id="ayran-count" class="text-[9px] text-cyan-400 font-black">0</span>
+                        </button>
+                        <button id="fill-coffee-btn" class="bg-stone-900 border border-stone-600 text-amber-200 font-bold text-[10px] py-1.5 rounded-xl transition flex flex-col items-center">
+                            <span>☕ Kahve (₺90)</span>
+                            <span id="coffee-count" class="text-[9px] text-amber-300 font-black">0</span>
+                        </button>
+                    </div>
+
+                    <!-- TATLI REYONU -->
+                    <div class="grid grid-cols-3 gap-1.5 mt-1.5">
+                        <button id="serve-kunefe-btn" class="bg-orange-950/40 border border-orange-600/40 text-orange-300 font-bold text-[10px] py-1.5 rounded-xl transition flex flex-col items-center">
+                            <span>🥧 Künefe (₺220)</span>
+                            <span id="kunefe-count" class="text-[9px] text-orange-400 font-black">Stok: 5</span>
+                        </button>
+                        <button id="serve-sutlac-btn" class="bg-slate-800 border border-slate-600 text-slate-200 font-bold text-[10px] py-1.5 rounded-xl transition flex flex-col items-center">
+                            <span>🍮 Sütlaç (₺140)</span>
+                            <span id="sutlac-count" class="text-[9px] text-amber-300 font-black">Stok: 5</span>
+                        </button>
+                        <button id="serve-halka-btn" class="bg-yellow-950/40 border border-yellow-600/40 text-yellow-300 font-bold text-[10px] py-1.5 rounded-xl transition flex flex-col items-center">
+                            <span>🍩 Halka (₺75)</span>
+                            <span id="halka-count" class="text-[9px] text-yellow-400 font-black">Stok: 5</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-2 pt-2 border-t border-slate-800 flex flex-col gap-1.5">
+                        <div class="flex items-center gap-1.5">
+                            <button id="press-lever-btn" class="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] py-1.5 rounded-xl transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-compress"></i> Pres Kolu
+                            </button>
+                            <button id="butter-toast-btn" class="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl transition">
+                                🧈 Tereyağ
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="service-section">
-            <button class="btn-action-main btn-wrap" ontouchstart="startWrapDrag(event)" onmousedown="startWrapDrag(event)">🌯 SAR</button>
-            <button class="btn-action-main btn-serve" onclick="serveCustomer()">🎁 VER</button>
-            <button class="btn-action-main btn-clear" onclick="clearBoard()">🗑️ ÇÖP</button>
+        <!-- ALT HIZLI EKLEME BARI -->
+        <div class="interactive flex justify-center items-center gap-1.5 w-full max-w-4xl mx-auto bg-slate-900/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-800 shadow-2xl overflow-x-auto">
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1 hidden sm:inline">Malzeme:</span>
+            <button class="ing-btn bg-amber-900/40 border border-amber-700/50 text-amber-200 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition" data-ing="ekmek">🍞 Ekmek</button>
+            <button class="ing-btn bg-yellow-900/40 border border-yellow-600/50 text-yellow-200 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition" data-ing="kasar">🧀 Kaşar</button>
+            <button class="ing-btn bg-red-950/40 border border-red-700/50 text-red-200 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition" data-ing="sucuk">🥩 Sucuk</button>
+            <button class="ing-btn bg-amber-800/40 border border-amber-500/50 text-amber-100 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition" data-ing="yumurta">🥚 Yumurta</button>
+            <button class="ing-btn bg-rose-950/40 border border-rose-800/50 text-rose-200 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition" data-ing="pastirma">🥓 Pastırma</button>
+            <button class="ing-btn bg-red-900/40 border border-red-500/50 text-red-300 font-bold text-[11px] px-2.5 py-1.5 rounded-xl transition" data-ing="domates">🍅 Domates</button>
+            <button id="clear-toast-btn" class="bg-slate-800 hover:bg-red-900/50 text-slate-300 text-[11px] px-2.5 py-1.5 rounded-xl transition ml-auto">🗑️ Temizle</button>
         </div>
     </div>
-</div>
 
-<script>
-    let gameState = {
-        money: 250,
-        day: 1,
-        meatStock: 1.0,
-        hasBase: false,
-        isFinished: false,
-        isPackaged: false,
-        boardItems: [],
-        currentOnBoard: null,
-        chopCount: 0,
-        currentOrder: null,
-        deliveredCount: 0,
-        gameMinutes: 480, 
-        unlockedRecipes: ['Klasik Döner Dürüm', 'Ayran']
-    };
+    <!-- TOPTANCI MARKETİ MODALI -->
+    <div id="market-modal" class="ui-layer bg-slate-950/90 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel max-w-lg w-full rounded-3xl p-6 border border-emerald-500/40 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-emerald-400 text-base"><i class="fa-solid fa-store mr-2"></i>Toptancı Hâl Toptan Satış</h3>
+                <button id="close-market-btn" class="bg-slate-800 text-white text-xs px-2.5 py-1 rounded-xl interactive">Kapat</button>
+            </div>
+            <div class="space-y-2 text-xs mb-4 max-h-60 overflow-y-auto custom-scrollbar">
+                <div class="bg-slate-900 p-2.5 rounded-2xl flex justify-between items-center border border-slate-800">
+                    <span>🍞 20x Tost Ekmeği Paketi</span>
+                    <button class="buy-item-btn bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-xl interactive" data-type="ekmek" data-price="180" data-amount="20">₺180 Al</button>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded-2xl flex justify-between items-center border border-slate-800">
+                    <span>🧀 15x Kaşar Peyniri Blok</span>
+                    <button class="buy-item-btn bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-xl interactive" data-type="kasar" data-price="250" data-amount="15">₺250 Al</button>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded-2xl flex justify-between items-center border border-slate-800">
+                    <span>🥩 15x Sucuk Kangal</span>
+                    <button class="buy-item-btn bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-xl interactive" data-type="sucuk" data-price="320" data-amount="15">₺320 Al</button>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded-2xl flex justify-between items-center border border-slate-800">
+                    <span>🥧 5x Tepsi Künefe</span>
+                    <button class="buy-item-btn bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-xl interactive" data-type="kunefe" data-price="400" data-amount="5">₺400 Al</button>
+                </div>
+                <div class="bg-slate-900 p-2.5 rounded-2xl flex justify-between items-center border border-slate-800">
+                    <span>🍮 5x Fırın Sütlaç</span>
+                    <button class="buy-item-btn bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-xl interactive" data-type="sutlac" data-price="260" data-amount="5">₺260 Al</button>
+                </div>
+            </div>
+            <div class="text-[10px] text-slate-400">Toptancıdan bizzat aldığın için ekstra nakliye ödemezsin.</div>
+        </div>
+    </div>
 
-    const ALL_RECIPES = [
-        { name: "Klasik Döner Dürüm", req: ["Döner Eti", "Dilim Soğan", "Özel Sos"], price: 180, type: "food" },
-        { name: "Ayran", req: ["Ayran"], price: 30, type: "drink" },
-        { name: "Adana Kebap", req: ["Kıyma / Et", "Dilim Domates", "Özel Sos"], price: 220, type: "food" },
-        { name: "Kola", req: ["Kola"], price: 40, type: "drink" },
-        { name: "Lahmacun", req: ["Kıyma / Et", "Dilim Soğan", "Dilim Domates"], price: 150, type: "food" },
-        { name: "Fıstıklı Baklava", req: ["Fıstık / Kadayıf", "Şerbet"], price: 210, type: "dessert" },
-        { name: "Hatay Künefe", req: ["Fıstık / Kadayıf", "Şerbet"], price: 230, type: "dessert" },
-        { name: "İskender Kebap", req: ["Döner Eti", "Özel Sos"], price: 290, type: "food" }
-    ];
+    <!-- KAHVEHANE MOLASI MODALI -->
+    <div id="kahve-modal" class="ui-layer bg-slate-950/90 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel max-w-md w-full rounded-3xl p-6 text-center border border-amber-500/40 shadow-2xl">
+            <div class="text-4xl mb-2">☕🎲</div>
+            <h2 class="text-xl font-black text-amber-400">Mahalle Kahvehanesi</h2>
+            <p class="text-xs text-slate-300 mt-1 mb-4">Esnaf arkadaşlarınla vakit geçirip stres at!</p>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button id="play-tavla-btn" class="bg-amber-900/60 hover:bg-amber-800 border border-amber-600 text-amber-200 font-bold p-3 rounded-2xl transition text-xs flex flex-col items-center gap-1 interactive">
+                    <span>🎲 Tavla Oyna</span>
+                    <span class="text-[9px] text-amber-400">+10 Prestij (₺75)</span>
+                </button>
+                <button id="drink-kahve-tea-btn" class="bg-amber-900/60 hover:bg-amber-800 border border-amber-600 text-amber-200 font-bold p-3 rounded-2xl transition text-xs flex flex-col items-center gap-1 interactive">
+                    <span>🍵 Çay Ismarla</span>
+                    <span class="text-[9px] text-emerald-400">Moral Bul (₺35)</span>
+                </button>
+            </div>
+            <button id="close-kahve-btn" class="w-full bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl transition interactive">Dükkana Dön</button>
+        </div>
+    </div>
 
-    window.onload = function() {
-        spawnCustomer();
-        initGlobalInteractions();
-        setInterval(updateGameTime, 2000);
-        renderRecipeList();
-    };
+    <!-- TABLET SİPARİŞİ MODALI -->
+    <div id="tablet-modal" class="ui-layer bg-slate-950/90 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel max-w-md w-full rounded-3xl p-6 border border-indigo-500/40 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-indigo-400 text-base"><i class="fa-solid fa-tablet-screen-button mr-2"></i>Ekspres Tablet İkmal</h3>
+                <button id="close-tablet-btn" class="bg-slate-800 text-white text-xs px-2.5 py-1 rounded-xl interactive">Kapat</button>
+            </div>
+            <p class="text-xs text-slate-300 mb-4">Kapıya kadar hızlı motorlu kurye teslimatı (₺60 Kurye ücreti dahil):</p>
+            <div class="space-y-2 text-xs mb-4">
+                <button class="buy-tablet-btn w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 p-2.5 rounded-2xl flex justify-between items-center text-white interactive" data-price="350">
+                    <span>📦 Karışık Malzeme Paketi (+8 Her Şey)</span>
+                    <span class="font-bold text-indigo-400">₺350</span>
+                </button>
+                <button class="buy-tablet-btn w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 p-2.5 rounded-2xl flex justify-between items-center text-white interactive" data-price="450">
+                    <span>🍰 Karışık Tatlı Paketi (+5 Her Tatlı)</span>
+                    <span class="font-bold text-indigo-400">₺450</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
-    function renderRecipeList() {
-        const container = document.getElementById('recipe-list-container');
-        container.innerHTML = '';
-        ALL_RECIPES.forEach(rec => {
-            let isUnlocked = gameState.unlockedRecipes.includes(rec.name);
-            let row = document.createElement('div');
-            row.className = 'recipe-row';
-            row.style.opacity = isUnlocked ? "1" : "0.4";
-            row.innerHTML = `<strong>${isUnlocked ? '✅' : '🔒'} ${rec.name}</strong> (${rec.price} TL)<br><small>Gerekli: ${rec.req.join(', ')}</small>`;
-            container.appendChild(row);
-        });
-    }
+    <!-- KARAVAN EKRANI -->
+    <div id="caravan-overlay" class="ui-layer bg-slate-950/95 flex flex-col items-center justify-center p-6 hidden">
+        <div class="glass-panel max-w-lg w-full rounded-3xl p-6 text-center border border-amber-500/40 shadow-2xl">
+            <div class="text-4xl mb-3">🔥🚐</div>
+            <h2 class="text-2xl font-black text-amber-400">Gün Tamamlandı - Karavan Zamanı</h2>
+            <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Gece vardiyası bitti. Dükkanın kirası ve faturaları kasadan otomatik ödendi. Şimdi şöminenin çıtırtısı eşliğinde karavanda dinlenme vakti...
+            </p>
+            <div class="my-6 p-4 bg-slate-900 rounded-2xl border border-slate-800 flex justify-around text-center">
+                <div>
+                    <div class="text-[10px] text-slate-400 font-bold">NET KASA</div>
+                    <div id="summary-money" class="text-lg font-black text-amber-400">₺750</div>
+                </div>
+                <div class="w-[1px] bg-slate-800"></div>
+                <div>
+                    <div class="text-[10px] text-slate-400 font-bold">PRESTİJ</div>
+                    <div id="summary-rep" class="text-lg font-black text-emerald-400">%100</div>
+                </div>
+            </div>
+            <button id="back-to-shop-btn" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 text-slate-950 font-black text-xs py-3 rounded-xl transition uppercase tracking-wider interactive">
+                🌅 Sabah Vardiyasına Başla
+            </button>
+        </div>
+    </div>
 
-    function toggleRecipeModal() {
-        const modal = document.getElementById('recipe-modal');
-        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    function spawnCustomer() {
-        let activeRecipes = ALL_RECIPES.filter(r => gameState.unlockedRecipes.includes(r.name));
-        let randomRecipe = activeRecipes[Math.floor(Math.random() * activeRecipes.length)];
-        let count = Math.random() > 0.6 ? 2 : 1; 
-        let isPaket = Math.random() > 0.5;
-
-        gameState.currentOrder = {
-            avatar: ["👳‍♂️", "🧔", "👩‍🦰", "👨‍🦱", "🧓", "👧"][Math.floor(Math.random() * 6)],
-            type: isPaket ? "paket" : "burada",
-            recipe: randomRecipe.name,
-            count: count,
-            dialog: isPaket 
-                ? `Usta acelem var, PAKET OLSUN ${count} TANE ${randomRecipe.name} yapar mısın?` 
-                : `Kolay gelsin usta, BURADA YEMEK İÇİN ${count} TANE ${randomRecipe.name} istiyorum.`
+    <!-- JAVASCRIPT MOTORU -->
+    <script>
+        const state = {
+            deviceType: 'tablet',
+            money: 750,
+            reputation: 100,
+            inCaravanMode: false,
+            stocks: { ekmek: 12, kasar: 10, sucuk: 10, yumurta: 8, pastırma: 6, domates: 8 },
+            drinks: { cay: 0, ayran: 0, kahve: 0 },
+            desserts: { kunefe: 5, sutlac: 5, halka: 5 },
+            currentToast: { hasBread: false, ingredients: [], isButtered: false, toastLevel: 0, isPressing: false },
+            currentCustomer: null,
+            maxPatience: 45,
+            currentPatience: 45,
+            patienceTimer: null
         };
 
-        gameState.deliveredCount = 0;
-        document.getElementById('cust-avatar').innerText = gameState.currentOrder.avatar;
-        document.getElementById('dialog-text').innerText = `"${gameState.currentOrder.dialog}"`;
-        document.getElementById('order-badge-area').innerHTML = `<span class="order-progress-badge">Sipariş: 0 / ${gameState.currentOrder.count} Teslim</span>`;
-        document.getElementById('dialog-buttons').style.display = 'flex';
-    }
+        const customerPool = [
+            { name: 'Taksici Hakan', title: 'Gece Vardiyası', avatar: '👨‍✈️', shirtColor: 0xca8a04, dialogue: 'Usta bol kaşarlı sucuklu tost, çay ve künefe çek!' },
+            { name: 'Yazılımcı Can', title: 'Kod Mesaisi', avatar: '👨‍💻', shirtColor: 0x2563eb, dialogue: 'Sabahlayağız usta, çift yumurtalı tost, kahve ve fırın sütlaç ver.' },
+            { name: 'Bekçi Kazım', title: 'Devriye', avatar: '👮‍♂️', shirtColor: 0x1e293b, dialogue: 'Hayırlı işler, pastırmalı tost ve yanında tatlı niyetine halka tatlısı.' },
+            { name: 'Öğrenci Merve', title: 'Vize Çalışması', avatar: '👩‍🎓', shirtColor: 0xdb2777, dialogue: 'Domatesli kaşarlı tost, ayran ve künefe lütfen!' }
+        ];
 
-    function acceptOrder() {
-        document.getElementById('dialog-text').innerText = `"Bekliyorum usta! (${gameState.currentOrder.count - gameState.deliveredCount} kaldı)"`;
-        document.getElementById('dialog-buttons').style.display = 'none';
-    }
+        const audioEngine = {
+            ctx: null,
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+            playClick() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.frequency.setValueAtTime(500, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.04);
+            }
+        };
 
-    function askClarity() { 
-        let recObj = ALL_RECIPES.find(r => r.name === gameState.currentOrder.recipe);
-        alert(`Sipariş: ${gameState.currentOrder.count} Adet ${gameState.currentOrder.recipe}\nTeslim Edilen: ${gameState.deliveredCount}\nMalzemeler: ${recObj.req.join(', ')}`); 
-    }
+        document.getElementById('select-phone-btn').onclick = () => startGameWithDevice('phone');
+        document.getElementById('select-tablet-btn').onclick = () => startGameWithDevice('tablet');
 
-    function updateGameTime() {
-        gameState.gameMinutes += 3; 
-        let hours = Math.floor(gameState.gameMinutes / 60);
-        let mins = gameState.gameMinutes % 60;
+        function startGameWithDevice(type) {
+            audioEngine.init(); audioEngine.playClick();
+            state.deviceType = type;
+            document.getElementById('device-modal').classList.add('hidden');
+            document.getElementById('game-hud').classList.remove('hidden');
 
-        if (hours >= 20) {
-            hours = 20; mins = 0;
-            document.getElementById('time-val').innerText = "20:00";
-            showEndDayModal();
-            return;
+            if (camera) {
+                camera.position.set(0, type === 'phone' ? 4.2 : 3.6, type === 'phone' ? 5.8 : 5.0);
+                camera.lookAt(0, 0.4, 0);
+            }
+
+            spawnNextCustomer();
+            updateStockGridUI();
         }
 
-        document.getElementById('time-val').innerText = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-    }
+        let lastCustomerIndex = -1;
+        function spawnNextCustomer() {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * customerPool.length);
+            } while (randomIndex === lastCustomerIndex && customerPool.length > 1);
+            
+            lastCustomerIndex = randomIndex;
+            const template = customerPool[randomIndex];
+            
+            const availableIngs = ['kaşar', 'sucuk', 'yumurta', 'pastırma', 'domates'];
+            const chosenIngs = ['ekmek', availableIngs[Math.floor(Math.random() * availableIngs.length)]];
 
-    function showEndDayModal() {
-        document.getElementById('end-day-modal').style.display = 'flex';
-        document.getElementById('day-summary-text').innerText = `${gameState.day}. Gün bitti! Kasa: ${gameState.money} TL`;
-        
-        let lockedRecipes = ALL_RECIPES.filter(r => !gameState.unlockedRecipes.includes(r.name));
-        let unlockBox = document.getElementById('new-recipe-unlocked-box');
-        
-        if(lockedRecipes.length > 0) {
-            let nextRecipe = lockedRecipes[0];
-            gameState.unlockedRecipes.push(nextRecipe.name);
-            unlockBox.innerHTML = `🎉 Yeni Tarif Açıldı: <strong>${nextRecipe.name}</strong>!`;
-        } else {
-            unlockBox.innerHTML = `🌟 Tüm tariflerin kilidi açık!`;
+            const drinkKeys = ['çay', 'ayran', 'kahve'];
+            const requiredDrink = drinkKeys[Math.floor(Math.random() * drinkKeys.length)];
+
+            const dessertKeys = ['künefe', 'sütlaç', 'halka'];
+            const requiredDessert = dessertKeys[Math.floor(Math.random() * dessertKeys.length)];
+
+            state.currentCustomer = { ...template, requiredItems: chosenIngs, requiredDrink, requiredDessert };
+            state.currentPatience = state.maxPatience;
+            renderCustomerUI();
+            update3DCustomerMesh(template.shirtColor);
+            startPatienceTimer();
         }
-        renderRecipeList();
-    }
 
-    function startNextDay() {
-        gameState.day++;
-        gameState.gameMinutes = 480; 
-        document.getElementById('day-val').innerText = gameState.day;
-        document.getElementById('end-day-modal').style.display = 'none';
-        spawnCustomer();
-    }
+        function renderCustomerUI() {
+            if (!state.currentCustomer) return;
+            document.getElementById('cust-avatar-icon').innerText = state.currentCustomer.avatar;
+            document.getElementById('cust-name-text').innerText = state.currentCustomer.name;
+            document.getElementById('cust-title-text').innerText = state.currentCustomer.title;
+            document.getElementById('cust-dialogue-text').innerText = `"${state.currentCustomer.dialogue}"`;
 
-    let activeDragData = null;
-    let activeToolType = null; 
-    const ghost = document.getElementById('drag-ghost');
-    const activeTool = document.getElementById('active-tool');
+            const container = document.getElementById('order-items-container');
+            let itemsHtml = state.currentCustomer.requiredItems.map(item => `
+                <span class="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase">
+                    ${item}
+                </span>
+            `).join('');
 
-    function startCustomDrag(e, name, icon) {
-        e.preventDefault();
-        activeToolType = null;
-        activeDragData = { name, icon };
-        ghost.innerText = icon;
-        ghost.style.display = 'block';
-        moveElement(e, ghost);
-    }
-
-    function startToolDrag(e, type) {
-        e.preventDefault();
-        activeDragData = null;
-        activeToolType = type;
-        activeTool.innerText = type === 'knife' ? '🔪' : '🥄';
-        activeTool.style.display = 'block';
-        moveElement(e, activeTool);
-    }
-
-    let wrapStartY = 0;
-    function startWrapDrag(e) {
-        e.preventDefault();
-        if(!gameState.hasBase || gameState.boardItems.length === 0) {
-            alert("Önce tezgah/tabak koyup malzemeleri eklemelisin!");
-            return;
+            itemsHtml += `
+                <span class="bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase">
+                    ☕ ${state.currentCustomer.requiredDrink}
+                </span>
+                <span class="bg-orange-500/15 text-orange-300 border border-orange-500/30 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase">
+                    🥧 ${state.currentCustomer.requiredDessert}
+                </span>
+            `;
+            container.innerHTML = itemsHtml;
         }
-        activeToolType = 'wrap';
-        wrapStartY = e.clientY || (e.touches && e.touches[0].clientY);
-        activeTool.innerText = '🌯';
-        activeTool.style.display = 'block';
-        moveElement(e, activeTool);
-    }
 
-    function initGlobalInteractions() {
-        window.addEventListener('mousemove', handleGlobalMove);
-        window.addEventListener('touchmove', handleGlobalMove, {passive: false});
-        window.addEventListener('mouseup', handleGlobalEnd);
-        window.addEventListener('touchend', handleGlobalEnd);
-    }
-
-    let lastMoveY = 0;
-
-    function handleGlobalMove(e) {
-        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-        if (activeDragData) {
-            moveElement(e, ghost);
-        } else if (activeToolType) {
-            moveElement(e, activeTool);
-
-            const machine = document.getElementById('doner-machine').getBoundingClientRect();
-            const boardRect = document.getElementById('board-zone').getBoundingClientRect();
-
-            if (activeToolType === 'knife') {
-                if (clientX >= machine.left && clientX <= machine.right && clientY >= machine.top && clientY <= machine.bottom) {
-                    let deltaY = Math.abs(clientY - lastMoveY);
-                    if (deltaY > 22) { 
-                        gameState.meatStock += 0.03; 
-                        document.getElementById('meat-count').innerText = gameState.meatStock.toFixed(1);
-                        createFallingMeatEffect(clientX, clientY);
-                    }
-                } else if (clientX >= boardRect.left && clientX <= boardRect.right && clientY >= boardRect.top && clientY <= boardRect.bottom) {
-                    if (gameState.currentOnBoard === 'Bütün Soğan' || gameState.currentOnBoard === 'Bütün Domates') {
-                        let deltaY = Math.abs(clientY - lastMoveY);
-                        if (deltaY > 12) {
-                            gameState.chopCount++;
-                            renderBoard();
-                            if (gameState.chopCount >= 10) { 
-                                let slicedName = gameState.currentOnBoard === 'Bütün Soğan' ? 'Dilim Soğan' : 'Dilim Domates';
-                                let slicedIcon = gameState.currentOnBoard === 'Bütün Soğan' ? '🧅' : '🍅';
-                                alert(`${gameState.currentOnBoard} doğrandı!`);
-                                gameState.currentOnBoard = null;
-                                gameState.chopCount = 0;
-                                gameState.boardItems.push({ name: slicedName, icon: slicedIcon });
-                                renderBoard();
-                            }
-                        }
-                    }
+        function startPatienceTimer() {
+            if (state.patienceTimer) clearInterval(state.patienceTimer);
+            state.patienceTimer = setInterval(() => {
+                if (state.currentPatience > 0) {
+                    state.currentPatience--;
+                    const pct = (state.currentPatience / state.maxPatience) * 100;
+                    document.getElementById('patience-bar').style.width = `${pct}%`;
+                } else {
+                    clearInterval(state.patienceTimer);
+                    state.reputation = Math.max(0, state.reputation - 10);
+                    alert("⚠️ Müşteri beklemekten sıkılıp gitti!");
+                    spawnNextCustomer();
                 }
+            }, 1000);
+        }
+
+        // İÇECEKLER & TATLILAR
+        document.getElementById('fill-tea-btn').onclick = () => { state.drinks.cay++; updateStockGridUI(); };
+        document.getElementById('fill-ayran-btn').onclick = () => { state.drinks.ayran++; updateStockGridUI(); };
+        document.getElementById('fill-coffee-btn').onclick = () => { state.drinks.kahve++; updateStockGridUI(); };
+
+        document.getElementById('serve-kunefe-btn').onclick = () => { if(state.desserts.kunefe > 0) { state.desserts.kunefe--; updateStockGridUI(); alert("🥧 Künefe hazırlandı!"); } else alert("Künefe bitti, toptancıdan al!"); };
+        document.getElementById('serve-sutlac-btn').onclick = () => { if(state.desserts.sutlac > 0) { state.desserts.sutlac--; updateStockGridUI(); alert("🍮 Sütlaç servis edildi!"); } else alert("Sütlaç bitti!"); };
+        document.getElementById('serve-halka-btn').onclick = () => { if(state.desserts.halka > 0) { state.desserts.halka--; updateStockGridUI(); alert("🍩 Halka tatlısı verildi!"); } else alert("Halka tatlısı bitti!"); };
+
+        // MODAL KONTROLLERİ
+        document.getElementById('open-market-btn').onclick = () => document.getElementById('market-modal').classList.remove('hidden');
+        document.getElementById('close-market-btn').onclick = () => document.getElementById('market-modal').classList.add('hidden');
+
+        document.getElementById('open-kahve-btn').onclick = () => document.getElementById('kahve-modal').classList.remove('hidden');
+        document.getElementById('close-kahve-btn').onclick = () => document.getElementById('kahve-modal').classList.add('hidden');
+
+        document.getElementById('open-tablet-btn').onclick = () => document.getElementById('tablet-modal').classList.remove('hidden');
+        document.getElementById('close-tablet-btn').onclick = () => document.getElementById('tablet-modal').classList.add('hidden');
+
+        // TOPTANCI SATIN ALMA
+        document.querySelectorAll('.buy-item-btn').forEach(btn => {
+            btn.onclick = () => {
+                const price = parseInt(btn.getAttribute('data-price'));
+                const type = btn.getAttribute('data-type');
+                const amount = parseInt(btn.getAttribute('data-amount'));
+
+                if (state.money >= price) {
+                    state.money -= price;
+                    if (state.stocks[type] !== undefined) state.stocks[type] += amount;
+                    if (state.desserts[type] !== undefined) state.desserts[type] += amount;
+                    updateStockGridUI();
+                    alert("📦 Toptancıdan alışveriş yapıldı!");
+                } else alert("Yetersiz Kasa Bakiyesi!");
+            };
+        });
+
+        // KAHVEHANE ETKİNLİKLERİ
+        document.getElementById('play-tavla-btn').onclick = () => {
+            if (state.money >= 75) {
+                state.money -= 75;
+                state.reputation = Math.min(100, state.reputation + 10);
+                updateStockGridUI();
+                alert("🎲 Tavlayı kazandın, mahallede itibarın arttı!");
+            } else alert("Yetersiz Bakiye!");
+        };
+        document.getElementById('drink-kahve-tea-btn').onclick = () => {
+            if (state.money >= 35) {
+                state.money -= 35;
+                updateStockGridUI();
+                alert("🍵 Çaylar içildi, esnafla dertleşildi!");
             }
-        }
-        lastMoveY = clientY;
-        if(e.cancelable) e.preventDefault();
-    }
+        };
 
-    function createFallingMeatEffect(x, y) {
-        const piece = document.createElement('div');
-        piece.className = 'falling-meat-piece';
-        piece.innerText = '🥩';
-        piece.style.left = `${x}px`;
-        piece.style.top = `${y}px`;
-        document.body.appendChild(piece);
-        setTimeout(() => piece.remove(), 400);
-    }
+        // TABLET İKMAL
+        document.querySelectorAll('.buy-tablet-btn').forEach(btn => {
+            btn.onclick = () => {
+                const price = parseInt(btn.getAttribute('data-price'));
+                if (state.money >= price) {
+                    state.money -= price;
+                    Object.keys(state.stocks).forEach(k => state.stocks[k] += 8);
+                    Object.keys(state.desserts).forEach(k => state.desserts[k] += 5);
+                    updateStockGridUI();
+                    alert("📱 Tablet siparişi kapıya ulaştı!");
+                } else alert("Yetersiz Bakiye!");
+            };
+        });
 
-    function moveElement(e, el) {
-        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        el.style.left = `${clientX}px`;
-        el.style.top = `${clientY}px`;
-    }
+        document.querySelectorAll('.ing-btn').forEach(btn => {
+            btn.onclick = () => { audioEngine.init(); addIngredientToToast(btn.getAttribute('data-ing')); };
+        });
 
-    function handleGlobalEnd(e) {
-        let clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-        let clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-
-        const boardRect = document.getElementById('board-zone').getBoundingClientRect();
-        const isInBoard = (clientX >= boardRect.left && clientX <= boardRect.right && clientY >= boardRect.top && clientY <= boardRect.bottom);
-
-        ghost.style.display = 'none';
-        activeTool.style.display = 'none';
-
-        if (activeDragData && isInBoard) {
-            processDropItem(activeDragData);
-        } else if (activeToolType === 'sauce' && isInBoard) {
-            if(gameState.hasBase && !gameState.isFinished) {
-                if(!gameState.boardItems.some(i => i.name === 'Özel Sos')) {
-                    gameState.boardItems.push({ name: 'Özel Sos', icon: '🥫' });
-                    renderBoard();
-                }
+        document.getElementById('clear-toast-btn').onclick = () => resetToastOnGrill();
+        document.getElementById('press-lever-btn').onclick = () => pressGrillLeverToggle();
+        document.getElementById('butter-toast-btn').onclick = () => {
+            if (state.currentToast.hasBread) {
+                state.currentToast.isButtered = true;
+                updateToastStateUI();
+                create3DToastMesh();
             }
-        } else if (activeToolType === 'wrap') {
-            let wrapEndY = clientY;
-            if (wrapStartY - wrapEndY > 40) {
-                if(gameState.hasBase && gameState.boardItems.length > 0) {
-                    if(!gameState.isFinished) {
-                        gameState.isFinished = true;
-                        renderBoard();
-                    }
-                }
-            }
-        }
+        };
 
-        activeDragData = null;
-        activeToolType = null;
-    }
+        document.getElementById('serve-toast-btn').onclick = () => {
+            if (!state.currentCustomer || !state.currentToast.hasBread) { alert("Tost hazırlanmadı!"); return; }
+            const reward = 180 + (state.currentToast.ingredients.length * 40);
+            state.money += reward;
+            state.reputation = Math.min(100, state.reputation + 5);
 
-    function processDropItem(data) {
-        if(data.name === 'Lavaş / Altlık' || data.name === 'Tatlı Tepsisi') {
-            gameState.hasBase = true;
-            gameState.isFinished = false;
-            gameState.isPackaged = false;
-            gameState.boardItems = [];
-            gameState.currentOnBoard = null;
-            renderBoard();
-            return;
-        }
+            clearInterval(state.patienceTimer);
+            resetToastOnGrill();
+            spawnNextCustomer();
+            updateStockGridUI();
+        };
 
-        if(data.name === 'Ayran' || data.name === 'Kola') {
-            gameState.hasBase = true;
-            gameState.isFinished = true;
-            gameState.boardItems = [data];
-            renderBoard();
-            return;
-        }
+        document.getElementById('end-day-fire-btn').onclick = () => {
+            state.inCaravanMode = true;
+            state.money = Math.max(0, state.money - 350); // Kira & Fatura Kesintisi
+            document.getElementById('game-hud').classList.add('hidden');
+            document.getElementById('caravan-overlay').classList.remove('hidden');
+            document.getElementById('summary-money').innerText = `₺${state.money}`;
+            document.getElementById('summary-rep').innerText = `%${state.reputation}`;
+            transitionToCaravanScene3D();
+        };
 
-        if(data.name === 'Bütün Soğan' || data.name === 'Bütün Domates') {
-            if(gameState.hasBase) {
-                alert("Tabak/Lavaş üzerine bütün sebze konulmaz!");
-                return;
-            }
-            gameState.currentOnBoard = data.name;
-            gameState.chopCount = 0;
-            renderBoard();
-            return;
-        }
+        document.getElementById('back-to-shop-btn').onclick = () => {
+            state.inCaravanMode = false;
+            document.getElementById('caravan-overlay').classList.add('hidden');
+            document.getElementById('game-hud').classList.remove('hidden');
+            transitionToShopScene3D();
+            spawnNextCustomer();
+        };
 
-        if(data.name === 'Paket Kağıdı') {
-            if(!gameState.isFinished) {
-                alert("Önce siparişi hazırlayıp sar butonuna basmalısın!");
-                return;
-            }
-            gameState.isPackaged = true;
-            renderBoard();
-            return;
-        }
-
-        if(!gameState.hasBase) {
-            alert("Önce tezgaha lavaş / tabak koymalısın!");
-            return;
-        }
-
-        if(data.name === 'Döner Eti') {
-            if(gameState.meatStock < 1) {
-                alert("Yeterli kesilmiş etin yok! Bıçağı döner ocağında kaydırarak et biriktir.");
-                return;
-            }
-            gameState.meatStock -= 1;
-            document.getElementById('meat-count').innerText = gameState.meatStock.toFixed(1);
-        }
-
-        gameState.boardItems.push(data);
-        renderBoard();
-    }
-
-    function renderBoard() {
-        const board = document.getElementById('board-content');
-        
-        if(gameState.currentOnBoard) {
-            let icon = gameState.currentOnBoard === 'Bütün Soğan' ? '🧅' : '🍅';
-            let progressPercent = (gameState.chopCount / 10) * 100;
-            board.innerHTML = `
-                <div style="text-align:center;">
-                    <div style="font-size:24px;">${icon}</div>
-                    <div style="font-size:8px; color:#f1c40f; font-weight:bold; margin-top:2px;">Doğra! (${gameState.chopCount}/10)</div>
-                    <div style="width:80px; height:5px; background:#444; border-radius:3px; margin:2px auto; overflow:hidden;">
-                        <div style="width:${progressPercent}%; height:100%; background:#27ae60;"></div>
-                    </div>
-                </div>`;
-            return;
-        }
-
-        if(!gameState.hasBase) {
-            board.innerHTML = "Tabak, lavaş veya içecek seçin!";
-            return;
-        }
-
-        if(gameState.isPackaged) {
-            board.innerHTML = `<div class="finished-dish" style="background:#d35400;">📦 Paket Hazır!</div>`;
-        } else if(gameState.isFinished) {
-            board.innerHTML = `<div class="finished-dish">🍽️ Hazır (Paketse Kağıt Sürükle)</div>`;
-        } else {
-            let itemsHTML = gameState.boardItems.map(i => `<span style="font-size:15px; margin: 0 2px;" title="${i.name}">${i.icon}</span>`).join('');
-            board.innerHTML = `<div class="plate-on-board">${itemsHTML || '<span style="font-size:8px; color:#8c532b;">(Malzeme Ekle)</span>'}</div>`;
-        }
-    }
-
-    function serveCustomer() {
-        if(!gameState.isFinished) {
-            alert("Müşteriye vermeden önce hazırlamayı bitirmelisin!");
-            return;
-        }
-
-        const isPaketWanted = gameState.currentOrder.type === 'paket';
-
-        if(isPaketWanted && !gameState.isPackaged) {
-            alert("Müşteri bunu 'PAKET' istiyor! Üzerine Paket Kağıdı sürüklemelisin.");
-            return;
-        }
-
-        const targetRecipe = ALL_RECIPES.find(r => r.name === gameState.currentOrder.recipe);
-        const currentNames = gameState.boardItems.map(i => i.name);
-        
-        let matches = targetRecipe.req.every(reqItem => currentNames.includes(reqItem));
-
-        if(matches) {
-            gameState.deliveredCount++;
-            gameState.money += targetRecipe.price;
-            document.getElementById('money-val').innerText = gameState.money;
-
-            if(gameState.deliveredCount < gameState.currentOrder.count) {
-                alert(`Harika! 1 porsiyon verildi (+${targetRecipe.price} TL). Diğeri bekleniyor! (${gameState.deliveredCount}/${gameState.currentOrder.count})`);
-                document.getElementById('dialog-text').innerText = `"Teşekkürler! Kalan ${gameState.currentOrder.count - gameState.deliveredCount} taneyi bekliyorum."`;
-                document.getElementById('order-badge-area').innerHTML = `<span class="order-progress-badge">Sipariş: ${gameState.deliveredCount} / ${gameState.currentOrder.count} Teslim</span>`;
-                clearBoard();
+        function addIngredientToToast(ingKey) {
+            if (ingKey === 'ekmek') {
+                if (state.stocks.ekmek > 0) { state.stocks.ekmek--; state.currentToast.hasBread = true; audioEngine.playClick(); }
             } else {
-                alert(`Helal olsun Usta! ${targetRecipe.name} tamamlandı (+${targetRecipe.price} TL)`);
-                clearBoard();
-                spawnCustomer();
+                if (!state.currentToast.hasBread) { alert("Önce ekmek koymalısın!"); return; }
+                if (state.stocks[ingKey] > 0) { state.stocks[ingKey]--; state.currentToast.ingredients.push(ingKey); audioEngine.playClick(); }
             }
-        } else {
-            alert(`Sipariş yanlış! İstenen: '${targetRecipe.name}' (${targetRecipe.req.join(', ')})`);
+            updateStockGridUI();
+            updateToastStateUI();
+            create3DToastMesh();
         }
-    }
 
-    function clearBoard() {
-        gameState.hasBase = false;
-        gameState.isFinished = false;
-        gameState.isPackaged = false;
-        gameState.boardItems = [];
-        gameState.currentOnBoard = null;
-        gameState.chopCount = 0;
-        renderBoard();
-    }
-</script>
+        function pressGrillLeverToggle() {
+            state.currentToast.isPressing = !state.currentToast.isPressing;
+            const btn = document.getElementById('press-lever-btn');
+            if (state.currentToast.isPressing) {
+                btn.innerHTML = 'Presleniyor...';
+                if (grillTopMesh) grillTopMesh.position.y = 0.45;
+                setTimeout(() => { if (state.currentToast.isPressing) state.currentToast.toastLevel = 2; update3DToastColor(); }, 2000);
+            } else {
+                btn.innerHTML = 'Pres Kolu';
+                if (grillTopMesh) grillTopMesh.position.y = 0.85;
+            }
+        }
+
+        function resetToastOnGrill() {
+            state.currentToast = { hasBread: false, ingredients: [], isButtered: false, toastLevel: 0, isPressing: false };
+            if (grillTopMesh) grillTopMesh.position.y = 0.85;
+            updateToastStateUI();
+            create3DToastMesh();
+        }
+
+        function updateStockGridUI() {
+            const grid = document.getElementById('stocks-panel-grid');
+            grid.innerHTML = Object.entries(state.stocks).map(([key, val]) => `
+                <div class="bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <div class="font-bold text-[8px] text-slate-400 uppercase">${key}</div>
+                    <div class="text-[11px] font-black ${val > 3 ? 'text-amber-400' : 'text-red-400'}">${val}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('money-display').innerText = `₺${state.money}`;
+            document.getElementById('rep-display').innerText = `%${state.reputation}`;
+
+            document.getElementById('tea-count').innerText = state.drinks.cay;
+            document.getElementById('ayran-count').innerText = state.drinks.ayran;
+            document.getElementById('coffee-count').innerText = state.drinks.kahve;
+
+            document.getElementById('kunefe-count').innerText = `Stok: ${state.desserts.kunefe}`;
+            document.getElementById('sutlac-count').innerText = `Stok: ${state.desserts.sutlac}`;
+            document.getElementById('halka-count').innerText = `Stok: ${state.desserts.halka}`;
+        }
+
+        function updateToastStateUI() {
+            const statusBadge = document.getElementById('order-status-badge');
+            if (state.currentToast.hasBread) {
+                statusBadge.innerText = `Hazır: ${state.currentToast.ingredients.length} Malzeme`;
+                statusBadge.className = "text-emerald-400 text-[8px] bg-emerald-500/10 px-1.5 py-0.5 rounded-md font-bold";
+            } else {
+                statusBadge.innerText = "Tezgah Boş";
+                statusBadge.className = "text-amber-400 text-[8px] bg-amber-500/10 px-1.5 py-0.5 rounded-md";
+            }
+        }
+
+        // 3D DÜNYA VE MOTOR (MÜŞTERİ BOYU & KAMERA DÜZELTİLDİ)
+        let scene, camera, renderer, toastGroup, grillTopMesh, customerMesh, shopGroup, caravanGroup;
+
+        function init3DWorld() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x04060a);
+            scene.fog = new THREE.FogExp2(0x04060a, 0.08);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 3.6, 5.0);
+            camera.lookAt(0, 0.4, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const warmSpot = new THREE.SpotLight(0xf59e0b, 3);
+            warmSpot.position.set(0, 5, 2);
+            scene.add(warmSpot);
+
+            shopGroup = new THREE.Group(); scene.add(shopGroup);
+            caravanGroup = new THREE.Group(); caravanGroup.visible = false; scene.add(caravanGroup);
+
+            createShopEnvironment();
+            createRealisticGrillMachine3D();
+            createCustomerMesh();
+            createCaravanInterior();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            function renderLoop() {
+                requestAnimationFrame(renderLoop);
+                renderer.render(scene, camera);
+            }
+            renderLoop();
+        }
+
+        function createShopEnvironment() {
+            const counter = new THREE.Mesh(new THREE.BoxGeometry(7, 0.4, 3), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+            counter.position.set(0, -0.2, 0);
+            shopGroup.add(counter);
+        }
+
+        function createRealisticGrillMachine3D() {
+            const grillBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.25, 1.8), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9 }));
+            grillBase.position.set(0, 0.12, 0); shopGroup.add(grillBase);
+
+            grillTopMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.18, 1.5), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 }));
+            grillTopMesh.position.set(0, 0.85, 0); shopGroup.add(grillTopMesh);
+
+            toastGroup = new THREE.Group(); toastGroup.position.set(0, 0.3, 0); shopGroup.add(toastGroup);
+        }
+
+        function create3DToastMesh() {
+            while (toastGroup.children.length > 0) toastGroup.remove(toastGroup.children[0]);
+            if (!state.currentToast.hasBread) return;
+
+            const breadGeo = new THREE.BoxGeometry(1.2, 0.12, 1.0);
+            const breadMat = new THREE.MeshStandardMaterial({ color: 0xfef08a });
+            const bottomBread = new THREE.Mesh(breadGeo, breadMat);
+            bottomBread.position.y = 0.06; toastGroup.add(bottomBread);
+
+            let stackY = 0.14;
+            state.currentToast.ingredients.forEach(ing => {
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.9), new THREE.MeshStandardMaterial({ color: ing === 'kasar' ? 0xfacc15 : 0x991b1b }));
+                mesh.position.y = stackY; toastGroup.add(mesh); stackY += 0.05;
+            });
+
+            const topBread = new THREE.Mesh(breadGeo, breadMat);
+            topBread.position.y = stackY + 0.06; toastGroup.add(topBread);
+        }
+
+        function update3DToastColor() {
+            toastGroup.traverse(child => { if (child.isMesh && child.material) child.material.color.setHex(0xd97706); });
+        }
+
+        // MÜŞTERİ YÜKSEKLİĞİ VE GÖRÜŞ AÇISI GÜNCELLENDİ
+        function createCustomerMesh() {
+            customerMesh = new THREE.Group();
+            
+            // Gövde
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 1.0), new THREE.MeshStandardMaterial({ color: 0x3b82f6 }));
+            body.position.y = 0.5; customerMesh.add(body);
+            
+            // Kafası Tam Görünecek Şekilde Yarıçap Ve Yüksekliği Ayarlandı
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshStandardMaterial({ color: 0xfed7aa }));
+            head.position.y = 1.15; customerMesh.add(head);
+
+            // Şapka / Saç Detayı
+            const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.08), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+            hat.position.y = 1.35; customerMesh.add(hat);
+
+            customerMesh.position.set(0, 0, -1.5); 
+            shopGroup.add(customerMesh);
+        }
+
+        function update3DCustomerMesh(colorHex) { if (customerMesh) customerMesh.children[0].material.color.setHex(colorHex || 0x3b82f6); }
+
+        function createCaravanInterior() {
+            const bed = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.6, 1.8), new THREE.MeshStandardMaterial({ color: 0x78350f }));
+            bed.position.set(0, -0.5, -2); caravanGroup.add(bed);
+
+            const fireplace = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.8), new THREE.MeshStandardMaterial({ color: 0x1c1917 }));
+            fireplace.position.set(-3, 0.5, -1.5); caravanGroup.add(fireplace);
+        }
+
+        function transitionToCaravanScene3D() {
+            shopGroup.visible = false; caravanGroup.visible = true;
+            camera.position.set(0, 1.2, 2.5); camera.lookAt(0, 0, -2);
+        }
+
+        function transitionToShopScene3D() {
+            caravanGroup.visible = false; shopGroup.visible = true;
+            camera.position.set(0, state.deviceType === 'phone' ? 4.2 : 3.6, state.deviceType === 'phone' ? 5.8 : 5.0); 
+            camera.lookAt(0, 0.4, 0);
+        }
+
+        window.addEventListener('load', () => { init3DWorld(); });
+    </script>
 </body>
 </html>
