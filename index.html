@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Gece Tostçusu - Görüş Açısı Düzeltilmiş</title>
+    <title>3D Gece Tostçusu - Yenilenmiş Tost Makinesi & Ekonomi</title>
     <!-- Tailwind CSS & FontAwesome Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Three.js & PeerJS -->
+    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;900&display=swap');
         * { user-select: none; -webkit-user-select: none; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -34,8 +33,8 @@
     <div id="device-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl">
         <div class="glass-panel w-full max-w-md rounded-3xl p-6 text-center border border-amber-500/30 shadow-2xl">
             <div class="text-4xl mb-3">🚐🔥</div>
-            <h2 class="text-xl font-black text-white mb-1">Gece Tostçusu</h2>
-            <p class="text-xs text-slate-400 mb-6">Cihazını seçerek dükkanı açabilirsin:</p>
+            <h2 class="text-xl font-black text-white mb-1">3D Gece Tostçusu</h2>
+            <p class="text-xs text-slate-400 mb-6">Detaylandırılmış Sanayi Tipi Tost Makinesi & Mahalle Yaşamı:</p>
             
             <div class="grid grid-cols-2 gap-3 mb-6">
                 <button id="select-phone-btn" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500 p-4 rounded-2xl transition flex flex-col items-center gap-2">
@@ -183,10 +182,10 @@
                     <div class="mt-2 pt-2 border-t border-slate-800 flex flex-col gap-1.5">
                         <div class="flex items-center gap-1.5">
                             <button id="press-lever-btn" class="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] py-1.5 rounded-xl transition flex items-center justify-center gap-1">
-                                <i class="fa-solid fa-compress"></i> Pres Kolu
+                                <i class="fa-solid fa-compress"></i> Pres Kolunu İndir
                             </button>
                             <button id="butter-toast-btn" class="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black text-[11px] px-2.5 py-1.5 rounded-xl transition">
-                                🧈 Tereyağ
+                                🧈 Tereyağ Süre
                             </button>
                         </div>
                     </div>
@@ -557,18 +556,38 @@
             state.currentToast.isPressing = !state.currentToast.isPressing;
             const btn = document.getElementById('press-lever-btn');
             if (state.currentToast.isPressing) {
-                btn.innerHTML = 'Presleniyor...';
-                if (grillTopMesh) grillTopMesh.position.y = 0.45;
-                setTimeout(() => { if (state.currentToast.isPressing) state.currentToast.toastLevel = 2; update3DToastColor(); }, 2000);
+                btn.innerHTML = '<i class="fa-solid fa-fire text-amber-300 animate-pulse"></i> Cızbız Presleniyor...';
+                if (grillTopGroup) {
+                    grillTopGroup.rotation.x = 0; // Kapağı tam kapat
+                    grillTopGroup.position.y = 0.38;
+                }
+                if (greenLed) greenLed.material.color.setHex(0x22c55e); // Yeşil ısınma lambası aktif
+                if (smokeParticles) smokeParticles.visible = true; // Dumanlar yükselsin
+
+                setTimeout(() => { 
+                    if (state.currentToast.isPressing) {
+                        state.currentToast.toastLevel = 2; 
+                        update3DToastColor(); 
+                    }
+                }, 2000);
             } else {
-                btn.innerHTML = 'Pres Kolu';
-                if (grillTopMesh) grillTopMesh.position.y = 0.85;
+                btn.innerHTML = '<i class="fa-solid fa-compress"></i> Pres Kolunu İndir';
+                if (grillTopGroup) {
+                    grillTopGroup.rotation.x = -Math.PI / 6; // Kapağı aç
+                    grillTopGroup.position.y = 0.55;
+                }
+                if (greenLed) greenLed.material.color.setHex(0x14532d); // Normal LED
+                if (smokeParticles) smokeParticles.visible = false;
             }
         }
 
         function resetToastOnGrill() {
             state.currentToast = { hasBread: false, ingredients: [], isButtered: false, toastLevel: 0, isPressing: false };
-            if (grillTopMesh) grillTopMesh.position.y = 0.85;
+            if (grillTopGroup) {
+                grillTopGroup.rotation.x = -Math.PI / 6;
+                grillTopGroup.position.y = 0.55;
+            }
+            if (smokeParticles) smokeParticles.visible = false;
             updateToastStateUI();
             create3DToastMesh();
         }
@@ -605,8 +624,8 @@
             }
         }
 
-        // 3D DÜNYA VE MOTOR (MÜŞTERİ BOYU & KAMERA DÜZELTİLDİ)
-        let scene, camera, renderer, toastGroup, grillTopMesh, customerMesh, shopGroup, caravanGroup;
+        // 3D DÜNYA VE MOTOR
+        let scene, camera, renderer, toastGroup, grillTopGroup, redLed, greenLed, smokeParticles, customerMesh, shopGroup, caravanGroup;
 
         function init3DWorld() {
             const container = document.getElementById('canvas-container');
@@ -645,51 +664,163 @@
 
             function renderLoop() {
                 requestAnimationFrame(renderLoop);
+                
+                // Duman Efekti Animasyonu
+                if (smokeParticles && smokeParticles.visible) {
+                    smokeParticles.children.forEach(p => {
+                        p.position.y += 0.008;
+                        p.scale.addScalar(0.005);
+                        if (p.position.y > 0.8) {
+                            p.position.y = 0.4;
+                            p.scale.set(0.1, 0.1, 0.1);
+                        }
+                    });
+                }
+
                 renderer.render(scene, camera);
             }
             renderLoop();
         }
 
         function createShopEnvironment() {
-            const counter = new THREE.Mesh(new THREE.BoxGeometry(7, 0.4, 3), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+            const counter = new THREE.Mesh(new THREE.BoxGeometry(7, 0.4, 3), new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 }));
             counter.position.set(0, -0.2, 0);
             shopGroup.add(counter);
         }
 
+        // DETAYLI & GERÇEKÇİ SANAYİ TİPİ TOST MAKİNESİ (BAŞTAN AŞAĞI YENİLENDİ)
         function createRealisticGrillMachine3D() {
-            const grillBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.25, 1.8), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9 }));
-            grillBase.position.set(0, 0.12, 0); shopGroup.add(grillBase);
+            const machineGroup = new THREE.Group();
+            machineGroup.position.set(0, 0, 0);
 
-            grillTopMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.18, 1.5), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 }));
-            grillTopMesh.position.set(0, 0.85, 0); shopGroup.add(grillTopMesh);
+            // 1. PASLANMAZ ÇELİK ALT GÖVDE
+            const baseGeo = new THREE.BoxGeometry(2.6, 0.35, 1.9);
+            const steelMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+            const baseMesh = new THREE.Mesh(baseGeo, steelMat);
+            baseMesh.position.set(0, 0.17, 0);
+            machineGroup.add(baseMesh);
 
-            toastGroup = new THREE.Group(); toastGroup.position.set(0, 0.3, 0); shopGroup.add(toastGroup);
+            // Ön Kontrol Paneli Şeridi
+            const panelGeo = new THREE.BoxGeometry(2.5, 0.18, 0.05);
+            const panelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
+            const panelMesh = new THREE.Mesh(panelGeo, panelMat);
+            panelMesh.position.set(0, 0.17, 0.93);
+            machineGroup.add(panelMesh);
+
+            // Derece Ayar Düğmesi (Kadran)
+            const knobGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.08, 16);
+            const knobMat = new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.5 });
+            const knob = new THREE.Mesh(knobGeo, knobMat);
+            knob.rotation.x = Math.PI / 2;
+            knob.position.set(-0.6, 0.17, 0.96);
+            machineGroup.add(knob);
+
+            // LED Güç Lambaları (Kırmızı & Yeşil)
+            const ledGeo = new THREE.SphereGeometry(0.035, 12, 12);
+            redLed = new THREE.Mesh(ledGeo, new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+            redLed.position.set(0.6, 0.17, 0.96);
+            machineGroup.add(redLed);
+
+            greenLed = new THREE.Mesh(ledGeo, new THREE.MeshBasicMaterial({ color: 0x14532d })); // Kapalıyken koyu yeşil
+            greenLed.position.set(0.72, 0.17, 0.96);
+            machineGroup.add(greenLed);
+
+            // 2. ALT DÖKÜM IZGARA PLAKASI & ÇIKINTILARI
+            const plateGeo = new THREE.BoxGeometry(2.3, 0.06, 1.5);
+            const castIronMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.9, metalness: 0.4 });
+            const bottomPlate = new THREE.Mesh(plateGeo, castIronMat);
+            bottomPlate.position.set(0, 0.38, 0);
+            machineGroup.add(bottomPlate);
+
+            // Alt Plaka Izgara Kanalları (Döküm Çizgileri)
+            for (let i = -1.0; i <= 1.0; i += 0.12) {
+                const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.02, 1.45), castIronMat);
+                ridge.position.set(i, 0.42, 0);
+                machineGroup.add(ridge);
+            }
+
+            // 3. AÇILIR-KAPANIR ÜST KAPAK GRUBU
+            grillTopGroup = new THREE.Group();
+            grillTopGroup.position.set(0, 0.55, -0.7); // Menteşe Ekseni
+            grillTopGroup.rotation.x = -Math.PI / 6; // Kapak hafif açık dursun
+
+            // Üst Kapak Gövdesi (Paslanmaz Çelik Dış Kapak)
+            const topCover = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.22, 1.6), steelMat);
+            topCover.position.set(0, 0.11, 0.75);
+            grillTopGroup.add(topCover);
+
+            // Üst Döküm Plaka & Kanalları
+            const topPlate = new THREE.Mesh(plateGeo, castIronMat);
+            topPlate.position.set(0, 0.0, 0.75);
+            grillTopGroup.add(topPlate);
+
+            for (let i = -1.0; i <= 1.0; i += 0.12) {
+                const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.02, 1.45), castIronMat);
+                ridge.position.set(i, -0.03, 0.75);
+                grillTopGroup.add(ridge);
+            }
+
+            // Ağır Sanayi Tipi Kulp (Kırmızı İzolasyonlu Tutacak)
+            const handleArmGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.6);
+            const armLeft = new THREE.Mesh(handleArmGeo, steelMat);
+            armLeft.position.set(-0.9, 0.25, 1.3);
+            armLeft.rotation.x = Math.PI / 3;
+            grillTopGroup.add(armLeft);
+
+            const armRight = new THREE.Mesh(handleArmGeo, steelMat);
+            armRight.position.set(0.9, 0.25, 1.3);
+            armRight.rotation.x = Math.PI / 3;
+            grillTopGroup.add(armRight);
+
+            const handleBar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.1), new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 }));
+            handleBar.rotation.z = Math.PI / 2;
+            handleBar.position.set(0, 0.38, 1.55);
+            grillTopGroup.add(handleBar);
+
+            machineGroup.add(grillTopGroup);
+
+            // 4. DUMAN EFEKTİ PARÇACIKLARI
+            smokeParticles = new THREE.Group();
+            smokeParticles.visible = false;
+            for (let s = 0; s < 8; s++) {
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.4 }));
+                p.position.set((Math.random() - 0.5) * 1.5, 0.45, (Math.random() - 0.5) * 1.0);
+                smokeParticles.add(p);
+            }
+            machineGroup.add(smokeParticles);
+
+            shopGroup.add(machineGroup);
+
+            // TOST MESH GRUBU
+            toastGroup = new THREE.Group();
+            toastGroup.position.set(0, 0.44, 0);
+            shopGroup.add(toastGroup);
         }
 
         function create3DToastMesh() {
             while (toastGroup.children.length > 0) toastGroup.remove(toastGroup.children[0]);
             if (!state.currentToast.hasBread) return;
 
-            const breadGeo = new THREE.BoxGeometry(1.2, 0.12, 1.0);
-            const breadMat = new THREE.MeshStandardMaterial({ color: 0xfef08a });
+            const breadGeo = new THREE.BoxGeometry(1.2, 0.1, 1.0);
+            const breadMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.6 });
             const bottomBread = new THREE.Mesh(breadGeo, breadMat);
-            bottomBread.position.y = 0.06; toastGroup.add(bottomBread);
+            bottomBread.position.y = 0.05; toastGroup.add(bottomBread);
 
-            let stackY = 0.14;
+            let stackY = 0.12;
             state.currentToast.ingredients.forEach(ing => {
-                const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.9), new THREE.MeshStandardMaterial({ color: ing === 'kasar' ? 0xfacc15 : 0x991b1b }));
-                mesh.position.y = stackY; toastGroup.add(mesh); stackY += 0.05;
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.04, 0.9), new THREE.MeshStandardMaterial({ color: ing === 'kasar' ? 0xfacc15 : 0x991b1b }));
+                mesh.position.y = stackY; toastGroup.add(mesh); stackY += 0.04;
             });
 
             const topBread = new THREE.Mesh(breadGeo, breadMat);
-            topBread.position.y = stackY + 0.06; toastGroup.add(topBread);
+            topBread.position.y = stackY + 0.05; toastGroup.add(topBread);
         }
 
         function update3DToastColor() {
             toastGroup.traverse(child => { if (child.isMesh && child.material) child.material.color.setHex(0xd97706); });
         }
 
-        // MÜŞTERİ YÜKSEKLİĞİ VE GÖRÜŞ AÇISI GÜNCELLENDİ
+        // MÜŞTERİ YÜKSEKLİĞİ VE GÖRÜŞ AÇISI
         function createCustomerMesh() {
             customerMesh = new THREE.Group();
             
@@ -697,7 +828,7 @@
             const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 1.0), new THREE.MeshStandardMaterial({ color: 0x3b82f6 }));
             body.position.y = 0.5; customerMesh.add(body);
             
-            // Kafası Tam Görünecek Şekilde Yarıçap Ve Yüksekliği Ayarlandı
+            // Kafası
             const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshStandardMaterial({ color: 0xfed7aa }));
             head.position.y = 1.15; customerMesh.add(head);
 
